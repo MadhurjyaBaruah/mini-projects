@@ -10,23 +10,19 @@ This repository contains mini projects created to improve problem-solving, codin
 
 ```text
 mini-projects/
-├── calculator/
 ├── qr-generator/
 ├── weather-app/
-├── expense-tracker/
-├── password-generator/
 └── README.md
 ```
 
 ## Projects (example)
 
-| Project            | Description                  |
-| ------------------ | ---------------------------- |
-| Calculator         | Basic calculator application |
-| QR Generator       | Generate QR codes from text  |
-| Weather App        | Display weather information  |
-| Expense Tracker    | Track daily expenses         |
-| Password Generator | Create secure passwords      |
+| Project            | Description                  | Link       |
+| ------------------ | ---------------------------- | ---------- |
+| Skyro Weather      | Display weather information  |[Click Here](https://madhurjyabaruah.github.io/mini-projects/skyro-weather/) |
+| QR Generator       | Generate QR codes from text  | not ready  |
+| Expense Tracker    | Track daily expenses         | not ready  |
+| Password Generator | Create secure passwords      | not ready  |
 
 ## Technologies
 
