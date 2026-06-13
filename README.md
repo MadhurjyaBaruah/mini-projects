@@ -6,7 +6,7 @@ A collection of small projects built while learning programming, web development
 
 This repository contains mini projects created to improve problem-solving, coding skills, and project development experience.
 
-## Project Structure(example)
+## Project Structure
 
 ```text
 mini-projects/
@@ -15,7 +15,7 @@ mini-projects/
 └── README.md
 ```
 
-## Projects (example)
+## Projects
 
 | Project            | Description                  | Link       |
 | ------------------ | ---------------------------- | ---------- |
