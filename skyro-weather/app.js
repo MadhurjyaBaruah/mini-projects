@@ -152,20 +152,75 @@ function getAqiLevel(val) {
   return AQI_LEVELS.find(function(l){ return val <= l.max; }) || AQI_LEVELS[AQI_LEVELS.length-1];
 }
 
-/* ─── Sun arc (arc baseline y=100, radius=90) ─── */
+/* ─── Sun arc ───
+   SVG: viewBox="0 0 200 112", arc path "M 10 100 A 90 90 0 0 1 190 100"
+   Center = (100, 100), radius = 90, starts LEFT (x=10) ends RIGHT (x=190).
+   Arc length of a semicircle = π × r = π × 90 ≈ 282.74
+
+   IMPORTANT: Open-Meteo returns sunrise/sunset as local ISO strings like
+   "2025-06-13T04:19" with NO timezone suffix — they are already in the
+   location's local time. new Date("2025-06-13T04:19") is parsed as LOCAL
+   time by the browser, which is wrong for remote locations.
+   We convert all three times to plain minutes-since-midnight to avoid
+   any timezone mismatch.
+*/
+function timeToMinutes(isoStr) {
+  /* Extract HH:MM directly from the string — no Date object needed */
+  var parts = isoStr.split('T');
+  if (parts.length < 2) return 0;
+  var hm = parts[1].substring(0, 5).split(':');
+  return parseInt(hm[0], 10) * 60 + parseInt(hm[1], 10);
+}
+
 function updateSunArc(sunriseStr, sunsetStr) {
-  var now      = new Date();
-  var sunrise  = new Date(sunriseStr);
-  var sunset   = new Date(sunsetStr);
-  var progress = Math.max(0, Math.min(1, (now - sunrise) / (sunset - sunrise)));
-  /* Semi-circle arc length = π * r = π * 90 ≈ 282.74 */
-  var arcLen   = Math.PI * 90;
-  dom.sunProgressArc.setAttribute('stroke-dasharray', (progress * arcLen).toFixed(2) + ' ' + arcLen.toFixed(2));
-  /* Dot position: angle starts at π (left) and goes to 0 (right) */
-  var angle = Math.PI * (1 - progress);
-  dom.sunDot.setAttribute('cx', (100 - 90 * Math.cos(angle)).toFixed(2));
-  /* y baseline = 100, so top of arc = 100 - 90 = 10 */
-  dom.sunDot.setAttribute('cy', (100 - 90 * Math.sin(angle)).toFixed(2));
+  /* Get current time in the location's timezone as HH:MM */
+  var nowStr;
+  try {
+    nowStr = new Date().toLocaleTimeString('en-GB', {
+      timeZone: state.timezone || undefined,
+      hour: '2-digit', minute: '2-digit', hour12: false
+    });
+  } catch(e) {
+    nowStr = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', hour12:false });
+  }
+  var parts      = nowStr.split(':');
+  var nowMin     = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+  var sunriseMin = timeToMinutes(sunriseStr);
+  var sunsetMin  = timeToMinutes(sunsetStr);
+  var rawProgress = (nowMin - sunriseMin) / (sunsetMin - sunriseMin);
+  var progress    = Math.max(0, Math.min(1, rawProgress));
+
+  var R      = 90;
+  var arcLen = Math.PI * R;  /* full semicircle ≈ 282.74 */
+
+  /* FIX 1 — dasharray gap must be huge (9999) so the filled segment
+     never wraps around and overwrites itself. Using arcLen+1 was wrong
+     because 282.74+1 < 283 could clip at high progress values.       */
+  dom.sunProgressArc.setAttribute('stroke-dasharray',
+    (progress * arcLen).toFixed(2) + ' 9999');
+
+  /* FIX 2 — angle formula was inverted.
+     SVG arc goes LEFT→RIGHT (sunrise→sunset).
+     progress=0 → dot at LEFT (cx=10)   → angle=0   → cos(0)=1   → x=100-90=10   ✓
+     progress=1 → dot at RIGHT (cx=190) → angle=π   → cos(π)=-1  → x=100+90=190  ✓
+     Correct formula: angle = π × progress  (was: π × (1-progress))             */
+  var angle = Math.PI * progress;
+  var dotX  = (100 - R * Math.cos(angle)).toFixed(2);
+  var dotY  = (100 - R * Math.sin(angle)).toFixed(2);
+
+  /* After sunset or before sunrise — hide dot, keep arc at 0 or full */
+  var sunDotOuter = dom.sunDot;
+  var sunDotInner = document.getElementById('sun-position-dot-inner');
+  if (rawProgress < 0 || rawProgress > 1) {
+    sunDotOuter.setAttribute('opacity', '0');
+    if (sunDotInner) sunDotInner.setAttribute('opacity', '0');
+  } else {
+    sunDotOuter.setAttribute('opacity', '1');
+    if (sunDotInner) sunDotInner.setAttribute('opacity', '1');
+    sunDotOuter.setAttribute('cx', dotX);
+    sunDotOuter.setAttribute('cy', dotY);
+    if (sunDotInner) { sunDotInner.setAttribute('cx', dotX); sunDotInner.setAttribute('cy', dotY); }
+  }
 }
 
 /* Compute approximate moonrise / moonset from latitude + date */
