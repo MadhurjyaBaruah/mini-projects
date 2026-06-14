@@ -48,6 +48,7 @@ const AQI_LEVELS = [
 const state = {
   lat:null, lon:null, locationName:'', country:'', timezone:'',
   clockTimer:null,
+  requestId:0,
 };
 
 const dom = {
@@ -404,6 +405,14 @@ function renderWeather(weatherData, aqiData) {
 }
 
 async function loadWeather() {
+  /* Request-token guard: prevents a slower, stale request (e.g. the
+     default-location load) from overwriting a newer one (e.g. geolocation
+     resolving afterwards). Each call gets its own id; only the latest
+     id is allowed to render. This race condition is what commonly breaks
+     this app on a live domain (GitHub Pages) but not on localhost, where
+     localStorage already had the popup marked as seen so only one
+     loadWeather() call ever fired. */
+  var myRequestId = ++state.requestId;
   showView('loading');
   try {
     var wP = new URLSearchParams({
@@ -424,9 +433,14 @@ async function loadWeather() {
       fetchJSON(API.weather+'?'+wP),
       fetchJSON(API.airQuality+'?'+aP),
     ]);
+
+    /* If a newer request started while this one was in flight, drop this result */
+    if (myRequestId !== state.requestId) return;
+
     if (results[0].status === 'rejected') throw new Error('Weather data unavailable. Please check your connection.');
     renderWeather(results[0].value, results[1].status === 'fulfilled' ? results[1].value : null);
   } catch(err) {
+    if (myRequestId !== state.requestId) return;
     showError('Unable to load weather', err.message || 'Check your connection and try again.');
   }
 }
@@ -492,13 +506,34 @@ function requestGeo(onSuccess, onError) {
 
 async function resolveAndLoad(lat, lon) {
   state.lat = lat; state.lon = lon;
-  try {
-    var geo  = await fetchJSON('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lon+'&format=json');
-    var addr = geo.address || {};
-    state.locationName = addr.city||addr.town||addr.village||addr.county||'Your Location';
-    state.country = addr.country || '';
-  } catch(e) { state.locationName='Your Location'; state.country=''; }
+  /* Show the dashboard loading state immediately for the new coordinates,
+     then resolve the place name in the background. This avoids waiting
+     on Nominatim (which can be slow or rate-limited on a live domain)
+     before showing any weather at all. */
   loadWeather();
+  try {
+    /* Nominatim usage policy requires identifying the application for
+       requests from a real domain (not localhost). A short timeout
+       prevents this from blocking the UI if it is slow or blocked. */
+    var controller = new AbortController();
+    var timeoutId  = setTimeout(function(){ controller.abort(); }, 4000);
+    var res = await fetch(
+      'https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lon+'&format=json&zoom=10&email=zephyr.weather.app@example.com',
+      { signal: controller.signal, headers: { 'Accept': 'application/json' } }
+    );
+    clearTimeout(timeoutId);
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    var geo  = await res.json();
+    var addr = geo.address || {};
+    state.locationName = addr.city||addr.town||addr.village||addr.county||addr.state||'Your Location';
+    state.country = addr.country || '';
+  } catch(e) {
+    state.locationName = 'Your Location';
+    state.country = '';
+  }
+  /* Update the displayed name/country once resolved, without re-fetching weather */
+  dom.locationName.textContent    = state.locationName;
+  dom.locationCountry.textContent = state.country ? ', '+state.country : '';
 }
 
 dom.locationBtn.addEventListener('click', function(){
