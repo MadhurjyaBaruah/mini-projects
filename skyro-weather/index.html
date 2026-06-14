@@ -194,10 +194,12 @@
                     <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
                   </filter>
                 </defs>
-                <!-- Arc baseline at y=100, radius=90, starts x=10 ends x=190 -->
+                
                 <path d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="rgba(17,139,80,0.14)" stroke-width="2" stroke-dasharray="5 5"/>
-                <path id="sun-progress-arc" d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="url(#arcGrad)" stroke-width="3" stroke-linecap="round" stroke-dasharray="0 283"/>
-                <circle id="sun-position-dot" cx="100" cy="10" r="7" fill="#e8a020" filter="url(#sunGlow)"/>
+                <!-- Yellow filled progress arc, updated by JS -->
+                <path id="sun-progress-arc" d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="url(#arcGrad)" stroke-width="3" stroke-linecap="round" stroke-dasharray="0 283.74"/>
+                <circle id="sun-position-dot" cx="100" cy="10" r="9" fill="#e8a020" filter="url(#sunGlow)"/>
+                <circle id="sun-position-dot-inner" cx="100" cy="10" r="5" fill="#f9d04a"/>
               </svg>
             </div>
             <div class="sun-times">
