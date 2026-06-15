@@ -25,6 +25,7 @@ mini-projects/
 ## Cooking Projects
 
 | Project            | Description                  | Link       |
+| ------------------ | ---------------------------- | ---------- |
 | Guiter Tuner    | Tune guitar in web        | not ready  |
 | Expense Tracker    | Track daily expenses         | not ready  |
 | Password Generator | Create secure passwords      | not ready  |
