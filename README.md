@@ -20,7 +20,12 @@ mini-projects/
 | Project            | Description                  | Link       |
 | ------------------ | ---------------------------- | ---------- |
 | Skyro Weather      | Display weather information  |[Click Here](https://madhurjyabaruah.github.io/mini-projects/skyro-weather/) |
-| QR Generator       | Generate QR codes from text  | not ready  |
+| QR Studio       | Generate QR codes from text  | [Click Here](https://madhurjyabaruah.github.io/mini-projects/qr-studio/)|
+
+## Cooking Projects
+
+| Project            | Description                  | Link       |
+| Guiter Tuner    | Tune guitar in web        | not ready  |
 | Expense Tracker    | Track daily expenses         | not ready  |
 | Password Generator | Create secure passwords      | not ready  |
 
