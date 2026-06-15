@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Studio - QR Code Generator</title>
+  <meta name="description" content="Generate crisp QR codes for URLs, text, phone numbers and Wi-Fi. Download as PNG or SVG. No sign-up. No ads. No tracking." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="bg-texture" aria-hidden="true"></div>
+
+<!-- ── Floating dock nav ───── -->
+<nav class="dock" aria-label="Site navigation">
+  <a href="#" class="dock-brand" aria-label="QR Studio home">
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="2" y="2" width="12" height="12" rx="2" fill="currentColor"/>
+      <rect x="18" y="2" width="12" height="12" rx="2" fill="currentColor" opacity=".55"/>
+      <rect x="2" y="18" width="12" height="12" rx="2" fill="currentColor" opacity=".55"/>
+      <rect x="22" y="22" width="8" height="8" rx="1.5" fill="currentColor"/>
+      <rect x="18" y="18" width="5" height="5" rx="1" fill="currentColor" opacity=".7"/>
+    </svg>
+    <span>QR Studio</span>
+  </a>
+
+  <div class="dock-divider" aria-hidden="true"></div>
+
+  <ul class="dock-links" role="list">
+    <li>
+      <a href="#" class="dock-item" data-tooltip="Home" aria-label="Home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </a>
+    </li>
+    <li>
+      <a href="#generator" class="dock-item" data-tooltip="Generate" aria-label="Go to generator">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="3" height="3" rx=".5"/>
+          <rect x="18" y="18" width="3" height="3" rx=".5"/>
+          <rect x="14" y="18" width="3" height="3" rx=".5"/>
+          <rect x="18" y="14" width="3" height="3" rx=".5"/>
+        </svg>
+      </a>
+    </li>
+    <li>
+      <a href="https://github.com/MadhurjyaBaruah/mini-projects/tree/main/qr-studio" target="_blank" rel="noopener" class="dock-item" data-tooltip="GitHub" aria-label="GitHub repository">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2C6.48 2 2 6.58 2 12.19c0 4.49 2.87 8.3 6.84 9.65.5.1.68-.22.68-.49v-1.7c-2.78.62-3.37-1.37-3.37-1.37-.45-1.17-1.1-1.49-1.1-1.49-.9-.63.07-.62.07-.62 1 .07 1.52 1.05 1.52 1.05.89 1.55 2.33 1.1 2.9.84.09-.65.35-1.1.63-1.35-2.21-.26-4.54-1.13-4.54-5.03 0-1.11.39-2.01 1.03-2.72-.1-.26-.45-1.29.1-2.68 0 0 .84-.28 2.75 1.04a9.38 9.38 0 0 1 2.5-.34c.85 0 1.7.11 2.5.34 1.91-1.32 2.75-1.04 2.75-1.04.55 1.39.2 2.42.1 2.68.64.71 1.03 1.61 1.03 2.72 0 3.91-2.34 4.77-4.57 5.02.36.32.68.94.68 1.9v2.82c0 .27.17.6.69.49A10.22 10.22 0 0 0 22 12.19C22 6.58 17.52 2 12 2z"/>
+        </svg>
+      </a>
+    </li>
+    <li>
+      <button id="theme-toggle" class="dock-item theme-toggle" data-tooltip="Toggle theme" aria-label="Switch theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </li>
+  </ul>
+</nav>
+
+<main>
+  <!-- ── Hero ──── -->
+  <section class="hero" aria-label="Introduction">
+    <div class="hero-copy">
+      <p class="eyebrow">Open Source · No Tracking · Runs Locally</p>
+      <h1>Make codes that <span class="accent">actually work</span></h1>
+      <p class="hero-desc">
+        A clean QR code generator built from scratch - no dependencies, no cloud, no nonsense. Paste your link and go.
+      </p>
+      <div class="hero-actions">
+        <a href="#generator" id="cta-generate" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+          Start generating
+        </a>
+        <a href="https://github.com/MadhurjyaBaruah/mini-projects/tree/main/qr-studio" class="btn btn-ghost" target="_blank" rel="noopener">View source</a>
+      </div>
+      <div class="hero-foot">
+        <div>
+          <strong>10</strong>
+          QR versions
+        </div>
+        <div>
+          <strong>4</strong>
+          EC levels
+        </div>
+        <div>
+          <strong>PNG + SVG</strong>
+          export
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+      <!-- Abstract generative art: nested QR-like grid dots -->
+      <svg viewBox="0 0 420 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#5cba96" stop-opacity=".22"/>
+            <stop offset="100%" stop-color="#5cba96" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- background glow -->
+        <circle cx="210" cy="210" r="200" fill="url(#glow)"/>
+
+        <!-- outer ring cells -->
+        <g class="bloom-pulse" opacity=".7">
+          <rect x="44"  y="44"  width="56" height="56" rx="10" fill="#088c50"/>
+          <rect x="56"  y="56"  width="32" height="32" rx="6" fill="#faf6ea"/>
+          <rect x="66"  y="66"  width="12" height="12" rx="2" fill="#088c50"/>
+        </g>
+
+        <g class="bloom-pulse" opacity=".7">
+          <rect x="320" y="44"  width="56" height="56" rx="10" fill="#088c50"/>
+          <rect x="332" y="56"  width="32" height="32" rx="6" fill="#faf6ea"/>
+          <rect x="342" y="66"  width="12" height="12" rx="2" fill="#088c50"/>
+        </g>
+
+        <g class="bloom-pulse" opacity=".7">
+          <rect x="44"  y="320" width="56" height="56" rx="10" fill="#088c50"/>
+          <rect x="56"  y="332" width="32" height="32" rx="6" fill="#faf6ea"/>
+          <rect x="66"  y="342" width="12" height="12" rx="2" fill="#088c50"/>
+        </g>
+
+        <!-- timing strips -->
+        <g opacity=".55">
+          <rect x="116" y="72"  width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="134" y="72"  width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="152" y="72"  width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="170" y="72"  width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="188" y="72"  width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="206" y="72"  width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="224" y="72"  width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="242" y="72"  width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="260" y="72"  width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="278" y="72"  width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="72"  y="116" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="72"  y="134" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="72"  y="152" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="72"  y="170" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="72"  y="188" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="72"  y="206" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="72"  y="224" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="72"  y="242" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="72"  y="260" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="72"  y="278" width="10" height="10" rx="2" fill="#088c50"/>
+        </g>
+
+        <!-- data dots (random pattern) -->
+        <g opacity=".45">
+          <rect x="116" y="116" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="134" y="134" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="152" y="116" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="170" y="134" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="188" y="116" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="206" y="134" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="224" y="116" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="242" y="134" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="260" y="116" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="278" y="134" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="116" y="152" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="134" y="170" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="152" y="152" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="170" y="170" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="188" y="152" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="206" y="170" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="224" y="152" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="242" y="170" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="260" y="152" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="278" y="170" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="116" y="188" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="134" y="206" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="152" y="188" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="170" y="206" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="188" y="188" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="206" y="206" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="224" y="188" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="242" y="206" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="260" y="188" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="278" y="206" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="116" y="224" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="134" y="242" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="152" y="224" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="170" y="242" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="188" y="224" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="206" y="242" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="224" y="224" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="242" y="242" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="260" y="224" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="278" y="242" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="116" y="260" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="134" y="278" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="152" y="260" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="170" y="278" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="188" y="260" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="206" y="278" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="224" y="260" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="242" y="278" width="10" height="10" rx="2" fill="#5cba96"/>
+          <rect x="260" y="260" width="10" height="10" rx="2" fill="#088c50"/>
+          <rect x="278" y="278" width="10" height="10" rx="2" fill="#5cba96"/>
+        </g>
+
+        <!-- center circle callout -->
+        <circle cx="210" cy="210" r="30" fill="#e4f0b2" stroke="#088c50" stroke-width="2"/>
+        <path d="M202 206 h16 M210 198 v16" stroke="#088c50" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- alignment pattern -->
+        <rect x="316" y="316" width="46" height="46" rx="8" fill="#5cba96" opacity=".85"/>
+        <rect x="324" y="324" width="30" height="30" rx="5" fill="#faf6ea" opacity=".9"/>
+        <rect x="332" y="332" width="14" height="14" rx="2" fill="#5cba96"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ── Generator ────── -->
+  <section id="generator">
+    <div class="section-head">
+      <p class="eyebrow">Generator</p>
+      <h2>Build your QR code</h2>
+      <p>Choose a content type, paste your data, customise the look and download.</p>
+    </div>
+
+    <div class="generator-grid">
+      <!-- Left: controls -->
+      <div class="panel">
+        <!-- Content type tabs -->
+        <div class="tabs" role="tablist" aria-label="Content type">
+          <button class="tab active" role="tab" aria-selected="true"  data-tab="text"   aria-controls="pane-text">Text</button>
+          <button class="tab"        role="tab" aria-selected="false" data-tab="url"    aria-controls="pane-url">URL</button>
+          <button class="tab"        role="tab" aria-selected="false" data-tab="phone"  aria-controls="pane-phone">Phone</button>
+          <button class="tab"        role="tab" aria-selected="false" data-tab="wifi"   aria-controls="pane-wifi">Wi-Fi</button>
+          <button class="tab"        role="tab" aria-selected="false" data-tab="custom" aria-controls="pane-custom">Raw</button>
+        </div>
+
+        <!-- Text -->
+        <div id="pane-text" class="input-pane active" role="tabpanel">
+          <div class="field">
+            <label for="input-text">Your text</label>
+            <textarea id="input-text" rows="4" placeholder="Type anything here - a message, a note, product info..."></textarea>
+          </div>
+        </div>
+
+        <!-- URL -->
+        <div id="pane-url" class="input-pane" role="tabpanel">
+          <div class="field">
+            <label for="input-url">Web address</label>
+            <input type="url" id="input-url" placeholder="example.com or https://..." />
+          </div>
+        </div>
+
+        <!-- Phone -->
+        <div id="pane-phone" class="input-pane" role="tabpanel">
+          <div class="field">
+            <label for="input-phone">Phone number</label>
+            <input type="tel" id="input-phone" placeholder="+1 555 123 4567" />
+          </div>
+        </div>
+
+        <!-- Wi-Fi -->
+        <div id="pane-wifi" class="input-pane" role="tabpanel">
+          <div class="field">
+            <label for="wifi-ssid">Network name (SSID)</label>
+            <input type="text" id="wifi-ssid" placeholder="MyNetwork" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="wifi-pass">Password</label>
+            <div class="password-row">
+              <input type="password" id="wifi-pass" placeholder="Password" autocomplete="new-password" />
+              <button type="button" class="icon-btn pw-toggle" data-target="wifi-pass" aria-pressed="false" aria-label="Show password">
+                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="wifi-sec">Security type</label>
+            <select id="wifi-sec">
+              <option value="WPA">WPA / WPA2</option>
+              <option value="WEP">WEP</option>
+              <option value="nopass">None (open)</option>
+            </select>
+          </div>
+          <label class="checkbox-row">
+            <input type="checkbox" id="wifi-hidden" />
+            Hidden network (SSID not broadcast)
+          </label>
+        </div>
+
+        <!-- Raw / Custom -->
+        <div id="pane-custom" class="input-pane" role="tabpanel">
+          <div class="field">
+            <label for="input-custom">Raw content</label>
+            <textarea id="input-custom" rows="5" placeholder="mailto:you@example.com&#10;geo:48.8566,2.3522&#10;BEGIN:VCARD..."></textarea>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div class="options-grid">
+          <div class="option">
+            <label for="size-range">
+              Output size
+              <span id="size-val">340</span>
+            </label>
+            <input type="range" id="size-range" min="120" max="600" step="20" value="340" />
+          </div>
+
+          <div class="option">
+            <label for="margin-range">
+              Quiet margin
+              <span id="margin-val">3</span>
+            </label>
+            <input type="range" id="margin-range" min="0" max="8" step="1" value="3" />
+          </div>
+
+          <div class="option">
+            <label for="ec-level">Error correction</label>
+            <select id="ec-level">
+              <option value="L">L - 7%</option>
+              <option value="M" selected>M - 15%</option>
+              <option value="Q">Q - 25%</option>
+              <option value="H">H - 30%</option>
+            </select>
+          </div>
+
+          <div class="option color-option">
+            <label>Colors</label>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div class="color-swatch">
+                <input type="color" id="fg-color" value="#16331f" aria-label="Foreground color" />
+                <span id="fg-hex">#16331F</span>
+              </div>
+              <div class="color-swatch">
+                <input type="color" id="bg-color" value="#ffffff" aria-label="Background color" />
+                <span id="bg-hex">#FFFFFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls-actions">
+          <button id="btn-generate" class="btn btn-primary btn-full">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Generate
+          </button>
+          <button id="btn-copy" class="btn btn-ghost" disabled aria-label="Copy content to clipboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copy
+          </button>
+        </div>
+
+        <p id="error-msg" class="error-msg" role="alert" aria-live="polite"></p>
+      </div>
+
+      <!-- Right: preview -->
+      <div class="preview" aria-label="QR code preview">
+        <div class="preview-frame" id="preview-frame">
+          <div class="preview-placeholder" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="4"  y="4"  width="22" height="22" rx="4" stroke="currentColor" stroke-width="2.5"/>
+              <rect x="10" y="10" width="10" height="10" rx="1.5" fill="currentColor" opacity=".4"/>
+              <rect x="38" y="4"  width="22" height="22" rx="4" stroke="currentColor" stroke-width="2.5"/>
+              <rect x="44" y="10" width="10" height="10" rx="1.5" fill="currentColor" opacity=".4"/>
+              <rect x="4"  y="38" width="22" height="22" rx="4" stroke="currentColor" stroke-width="2.5"/>
+              <rect x="10" y="44" width="10" height="10" rx="1.5" fill="currentColor" opacity=".4"/>
+              <rect x="38" y="38" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/>
+              <rect x="46" y="38" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/>
+              <rect x="54" y="38" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/>
+              <rect x="38" y="46" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/>
+              <rect x="54" y="46" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/>
+              <rect x="38" y="54" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/>
+              <rect x="46" y="54" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/>
+            </svg>
+            <p>Fill in the form and hit Generate</p>
+          </div>
+          <canvas id="qr-canvas" aria-label="Generated QR code"></canvas>
+        </div>
+
+        <p class="preview-meta" id="preview-meta" aria-live="polite"></p>
+
+        <div class="preview-actions">
+          <button id="btn-dl-png" class="btn btn-secondary" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            PNG
+          </button>
+          <button id="btn-dl-svg" class="btn btn-secondary" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            SVG
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ── Footer ─────-->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect x="2" y="2" width="12" height="12" rx="2" fill="currentColor"/>
+        <rect x="18" y="2" width="12" height="12" rx="2" fill="currentColor" opacity=".45"/>
+        <rect x="2" y="18" width="12" height="12" rx="2" fill="currentColor" opacity=".45"/>
+        <rect x="22" y="22" width="8" height="8" rx="1.5" fill="currentColor"/>
+        <rect x="18" y="18" width="5" height="5" rx="1" fill="currentColor" opacity=".65"/>
+      </svg>
+      QR Studio
+    </div>
+    <p class="footer-note">Runs in your browser. Nothing is sent anywhere.</p>
+    <nav class="footer-links" aria-label="Footer links">
+      <a href="https://github.com/MadhurjyaBaruah/mini-projects/tree/main/qr-studio" target="_blank" rel="noopener">GitHub</a>
+      <a href="#generator">Generate</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="qrcode.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
