@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pitchfork: Browser Based Guitar and Instrument Tuner</title>
+<meta name="description" content="A real time instrument tuner that runs entirely in your browser. Acoustic guitar, electric guitar, bass, ukulele, violin and chromatic mode. No installs, no uploads.">
+<meta name="theme-color" content="#118b50">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23118b50'/%3E%3Cpath d='M9 6 L9 18 A7 7 0 1 0 16 25 L16 6 Z' fill='none' stroke='%23fbf6e9' stroke-width='2.4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="skip-link" href="#tuner">Skip to tuner</a>
+
+<nav class="navbar" id="navbar" aria-label="Primary">
+  <div class="navbar-inner">
+    <a href="#tuner" class="nav-brand">PITCHFORK<span class="nav-brand-dot">.</span></a>
+
+    <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navMenu" aria-label="Open navigation menu">
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+    </button>
+
+    <ul class="nav-menu" id="navMenu">
+      <li><a href="#tuner" class="nav-link active" data-section="tuner">Tuner</a></li>
+      <li><a href="#instruments" class="nav-link" data-section="instruments">Instruments</a></li>
+      <li><a href="#readout" class="nav-link" data-section="readout">Readout</a></li>
+      <li><a href="#guide" class="nav-link" data-section="guide">Guide</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+
+  <section id="tuner" class="hero" aria-labelledby="hero-heading">
+    <div class="hero-grid">
+
+      <div class="hero-copy">
+        <p class="eyebrow">Zero Upload / Runs On Device</p>
+        <h1 id="hero-heading" class="hero-title">TUNE BY EAR.<br>CONFIRM WITH MATH.</h1>
+        <p class="hero-sub">Pitchfork listens through your microphone and measures the exact frequency of every note you play, then tells you how far off you are in cents. Nothing is recorded. Nothing leaves your browser tab.</p>
+
+        <div class="hero-actions">
+          <button id="toggleTuner" class="btn-primary" type="button" aria-pressed="false">
+            <span id="toggleTunerLabel">Start Tuning</span>
+          </button>
+          <p class="hero-hint" id="statusHint">Press start and allow microphone access.</p>
+        </div>
+
+        <div class="error-banner" id="errorBanner" role="alert" hidden></div>
+
+        <dl class="hero-specs">
+          <div class="hero-spec">
+            <dt>Detection method</dt>
+            <dd>Autocorrelation, parabolic refined</dd>
+          </div>
+          <div class="hero-spec">
+            <dt>Reading rate</dt>
+            <dd>~22 analyses per second</dd>
+          </div>
+          <div class="hero-spec">
+            <dt>Data sent anywhere</dt>
+            <dd>None. Audio stays in this tab</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="meter-panel" id="meterPanel">
+        <span class="panel-bolt panel-bolt-tl" aria-hidden="true"></span>
+        <span class="panel-bolt panel-bolt-tr" aria-hidden="true"></span>
+        <span class="panel-bolt panel-bolt-bl" aria-hidden="true"></span>
+        <span class="panel-bolt panel-bolt-br" aria-hidden="true"></span>
+
+        <div class="panel-label">CH.1 / PITCH MONITOR<span id="instrumentTag">ACOUSTIC GUITAR</span></div>
+
+        <svg class="meter-gauge" id="meterGauge" viewBox="0 0 320 190" aria-hidden="true">
+          <path class="gauge-track" d="M 30 178 A 130 130 0 0 1 290 178" />
+          <path class="gauge-zone" id="gaugeZone" d="M 139.7 49.6 A 130 130 0 0 1 180.3 49.6" />
+          <g id="tickGroup"></g>
+          <!-- Static translate positions the pivot; inner g gets CSS rotation around local origin -->
+          <g transform="translate(160, 178)">
+            <g id="needleGroup" class="needle-group">
+              <line class="needle" x1="0" y1="0" x2="0" y2="-120" />
+              <circle class="needle-hub" cx="0" cy="0" r="9" />
+            </g>
+          </g>
+        </svg>
+
+        <div class="meter-labels">
+          <span>FLAT</span>
+          <span>IN TUNE</span>
+          <span>SHARP</span>
+        </div>
+
+        <div class="meter-readout">
+          <span class="note-display" id="noteDisplay">&ndash;&ndash;</span>
+          <span class="freq-display" id="freqDisplay">0.0<small>HZ</small></span>
+        </div>
+
+        <div class="status-row">
+          <span class="status-chip" id="statusChip" data-state="idle">IDLE</span>
+          <span class="cents-display" id="centsDisplay">0 CENTS</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="instruments" class="instruments-section" aria-labelledby="instruments-heading">
+    <p class="eyebrow">Input Select</p>
+    <h2 id="instruments-heading" class="section-title">Choose your instrument</h2>
+    <p class="section-sub">Each profile sets the expected string range so detection locks on faster and ignores frequencies that string could not produce.</p>
+
+    <div class="instrument-grid" id="instrumentGrid" role="group" aria-label="Instrument selection">
+      <button type="button" class="instrument-btn active" data-instrument="acoustic" aria-pressed="true">
+        <span class="instrument-code">AG</span>
+        <span class="instrument-name">Acoustic Guitar</span>
+      </button>
+      <button type="button" class="instrument-btn" data-instrument="electric" aria-pressed="false">
+        <span class="instrument-code">EG</span>
+        <span class="instrument-name">Electric Guitar</span>
+      </button>
+      <button type="button" class="instrument-btn" data-instrument="bass" aria-pressed="false">
+        <span class="instrument-code">BG</span>
+        <span class="instrument-name">Bass Guitar</span>
+      </button>
+      <button type="button" class="instrument-btn" data-instrument="ukulele" aria-pressed="false">
+        <span class="instrument-code">UK</span>
+        <span class="instrument-name">Ukulele</span>
+      </button>
+      <button type="button" class="instrument-btn" data-instrument="violin" aria-pressed="false">
+        <span class="instrument-code">VI</span>
+        <span class="instrument-name">Violin</span>
+      </button>
+      <button type="button" class="instrument-btn" data-instrument="chromatic" aria-pressed="false">
+        <span class="instrument-code">CH</span>
+        <span class="instrument-name">Chromatic Mode</span>
+      </button>
+    </div>
+
+    <div class="string-rail">
+      <span class="string-rail-label">STRINGS IN RANGE</span>
+      <div class="string-chips" id="stringChips"></div>
+    </div>
+  </section>
+
+  <section id="readout" class="readout-section" aria-labelledby="readout-heading">
+    <p class="eyebrow">Live Data</p>
+    <h2 id="readout-heading" class="section-title">Frequency and note readout</h2>
+    <p class="section-sub">Full detail behind the meter above, useful when you want to log a reading or check exactly how far a string has drifted.</p>
+
+    <div class="readout-grid">
+      <div class="readout-card">
+        <span class="readout-label">Detected Note</span>
+        <span class="readout-value" id="readoutNote">&ndash;&ndash;</span>
+      </div>
+      <div class="readout-card">
+        <span class="readout-label">Frequency</span>
+        <span class="readout-value" id="readoutFreq">0.0 Hz</span>
+      </div>
+      <div class="readout-card">
+        <span class="readout-label">Nearest String</span>
+        <span class="readout-value" id="readoutString">&ndash;&ndash;</span>
+      </div>
+      <div class="readout-card">
+        <span class="readout-label">Target Frequency</span>
+        <span class="readout-value" id="readoutTarget">&ndash;&ndash;</span>
+      </div>
+      <div class="readout-card">
+        <span class="readout-label">Deviation</span>
+        <span class="readout-value" id="readoutCents">0 cents</span>
+      </div>
+      <div class="readout-card">
+        <span class="readout-label">Signal Strength</span>
+        <div class="signal-bar" role="img" aria-label="Microphone signal level">
+          <div class="signal-fill" id="signalFill"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="guide" class="guide-section" aria-labelledby="guide-heading">
+    <p class="eyebrow">Reference</p>
+    <h2 id="guide-heading" class="section-title">Standard tuning guide</h2>
+    <p class="section-sub" id="guideIntro">Showing standard tuning for acoustic guitar. This table follows whatever instrument is selected above.</p>
+
+    <table class="guide-table">
+      <thead>
+        <tr>
+          <th scope="col">String</th>
+          <th scope="col">Note</th>
+          <th scope="col">Frequency</th>
+        </tr>
+      </thead>
+      <tbody id="guideTableBody"></tbody>
+    </table>
+    <p class="guide-footnote" id="guideFootnote"></p>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div class="footer-brand-block">
+      <p class="footer-brand">PITCHFORK.</p>
+      <p class="footer-tagline">A tuner that lives entirely inside this browser tab.</p>
+    </div>
+    <div class="footer-meta">
+      <p>Built on the Web Audio API using autocorrelation based pitch detection with parabolic interpolation. No external pitch detection service, no analytics, no audio ever leaves your device.</p>
+      <p>Needs microphone permission and a secure connection. Works in current versions of Chrome, Firefox, Edge and Safari.</p>
+    </div>
+  </div>
+  <p class="footer-copy">Copyright <span id="yearStamp"></span> Pitchfork Tuner. Built for musicians who tune by string, not by guess.</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
