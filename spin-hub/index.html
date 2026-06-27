@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SpinHub – A beautiful, customizable spinning wheel hub. Create, save, and spin unlimited custom wheels." />
+  <title>SpinHub – Spin Your Decisions</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════
+       HEADER / NAV
+  ══════════════════════════════════════════ -->
+  <header class="site-header" role="banner">
+    <div class="header-inner">
+      <a class="logo" href="#" aria-label="SpinHub Home" id="logo-link">
+        <span class="logo-mark" aria-hidden="true">◎</span>
+        <span class="logo-text">SpinHub</span>
+      </a>
+      <nav class="main-nav" aria-label="Primary navigation">
+        <button class="nav-btn active" data-view="home" aria-current="page">Home</button>
+        <button class="nav-btn" data-view="my-wheels">My Wheels</button>
+        <button class="nav-btn" data-view="builder">+ Create</button>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobile-menu" hidden>
+      <button class="nav-btn" data-view="home">Home</button>
+      <button class="nav-btn" data-view="my-wheels">My Wheels</button>
+      <button class="nav-btn" data-view="builder">+ Create</button>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       MAIN CONTENT
+  ══════════════════════════════════════════ -->
+  <main id="app" role="main">
+
+    <!-- ─── VIEW: HOME ─────────────────────── -->
+    <section class="view" id="view-home" aria-label="Home">
+
+      <div class="hero">
+        <div class="hero-text">
+          <p class="hero-eyebrow">Your decision-making hub</p>
+          <h1 class="hero-title">Spin it.<br>Decide it.</h1>
+          <p class="hero-sub">Pick from ready-made wheels or build your own. Save as many as you like and spin away.</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" data-view="builder">Create a Wheel</button>
+            <button class="btn btn-outline" data-scroll="templates">Browse Templates</button>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <canvas id="hero-wheel" width="280" height="280"></canvas>
+          <div class="hero-pointer">▼</div>
+        </div>
+      </div>
+
+      <!-- Template Categories -->
+      <div class="section-header" id="templates">
+        <h2 class="section-title">Ready-Made Wheels</h2>
+        <p class="section-sub">Tap any card to launch and spin instantly.</p>
+      </div>
+
+      <div class="template-grid" id="template-grid" role="list">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Recent Wheels -->
+      <div class="section-header" id="recent-section" style="display:none">
+        <h2 class="section-title">Recently Used</h2>
+      </div>
+      <div class="recent-grid" id="recent-grid"></div>
+
+    </section>
+
+    <!-- ─── VIEW: MY WHEELS ──────────────────── -->
+    <section class="view" id="view-my-wheels" aria-label="My Wheels" hidden>
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">My Wheels</h2>
+          <p class="page-sub">All your saved and favourite wheels in one place.</p>
+        </div>
+        <button class="btn btn-primary" data-view="builder">+ New Wheel</button>
+      </div>
+
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="favorites">⭐ Favorites</button>
+        <button class="filter-btn" data-filter="custom">Custom</button>
+        <button class="filter-btn" data-filter="template">Templates</button>
+        <input class="search-input" type="search" placeholder="Search wheels…" id="wheel-search" aria-label="Search saved wheels" />
+      </div>
+
+      <div class="wheels-grid" id="wheels-grid" role="list">
+        <!-- Populated by JS -->
+      </div>
+
+      <div class="empty-state" id="wheels-empty" hidden>
+        <div class="empty-icon">🎡</div>
+        <h3>No wheels yet</h3>
+        <p>Create your first wheel or pick a template to get started.</p>
+        <button class="btn btn-primary" data-view="builder">Create a Wheel</button>
+      </div>
+    </section>
+
+    <!-- ─── VIEW: BUILDER ────────────────────── -->
+    <section class="view" id="view-builder" aria-label="Wheel Builder" hidden>
+      <div class="page-header">
+        <div>
+          <h2 class="page-title" id="builder-title">Build a Wheel</h2>
+          <p class="page-sub">Add items, customise, then spin.</p>
+        </div>
+        <div class="builder-actions">
+          <button class="btn btn-outline" id="save-wheel-btn">Save Wheel</button>
+          <button class="btn btn-primary" id="go-spin-btn">Spin ↗</button>
+        </div>
+      </div>
+
+      <div class="builder-layout">
+
+        <!-- Left: Settings -->
+        <div class="builder-panel" id="builder-panel">
+
+          <!-- Wheel Info -->
+          <div class="panel-section">
+            <h3 class="panel-heading">Wheel Info</h3>
+            <label class="field-label" for="wheel-name">Title</label>
+            <input class="field-input" id="wheel-name" type="text" placeholder="My Wheel" maxlength="60" />
+            <label class="field-label" for="wheel-desc">Description (optional)</label>
+            <textarea class="field-input field-textarea" id="wheel-desc" placeholder="What's this wheel for?" rows="2" maxlength="200"></textarea>
+          </div>
+
+          <!-- Items -->
+          <div class="panel-section">
+            <div class="panel-heading-row">
+              <h3 class="panel-heading">Items</h3>
+              <span class="item-count" id="item-count">0 items</span>
+            </div>
+            <div class="items-list" id="items-list" role="list" aria-label="Wheel items">
+              <!-- Populated by JS -->
+            </div>
+            <button class="btn-add-item" id="add-item-btn" aria-label="Add item">
+              <span aria-hidden="true">+</span> Add Item
+            </button>
+          </div>
+
+          <!-- Wheel Appearance -->
+          <div class="panel-section">
+            <h3 class="panel-heading">Appearance</h3>
+            <div class="settings-grid">
+              <div class="setting-row">
+                <label class="field-label" for="wheel-size">Wheel Size</label>
+                <select class="field-select" id="wheel-size">
+                  <option value="300">Small</option>
+                  <option value="420" selected>Medium</option>
+                  <option value="540">Large</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <label class="field-label" for="font-family">Font</label>
+                <select class="field-select" id="font-family">
+                  <option value="system-ui">System</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="'Courier New', monospace">Courier</option>
+                  <option value="Impact, sans-serif">Impact</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <label class="field-label" for="font-size">Font Size</label>
+                <select class="field-select" id="font-size">
+                  <option value="11">Small</option>
+                  <option value="14" selected>Medium</option>
+                  <option value="17">Large</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <label class="field-label" for="border-width">Border</label>
+                <select class="field-select" id="border-width">
+                  <option value="0">None</option>
+                  <option value="2" selected>Thin</option>
+                  <option value="5">Thick</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <label class="field-label" for="pointer-style">Pointer</label>
+                <select class="field-select" id="pointer-style">
+                  <option value="arrow">Arrow</option>
+                  <option value="pin">Pin</option>
+                  <option value="flag">Flag</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <label class="field-label" for="center-style">Centre</label>
+                <select class="field-select" id="center-style">
+                  <option value="circle">Circle</option>
+                  <option value="dot">Dot</option>
+                  <option value="none">None</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Animation -->
+          <div class="panel-section">
+            <h3 class="panel-heading">Animation</h3>
+            <div class="settings-grid">
+              <div class="setting-row">
+                <label class="field-label" for="spin-duration">Duration</label>
+                <select class="field-select" id="spin-duration">
+                  <option value="3000">Fast (3s)</option>
+                  <option value="5000" selected>Normal (5s)</option>
+                  <option value="8000">Slow (8s)</option>
+                  <option value="12000">Very Slow (12s)</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <label class="field-label" for="spin-direction">Direction</label>
+                <select class="field-select" id="spin-direction">
+                  <option value="cw" selected>Clockwise</option>
+                  <option value="ccw">Counter-clockwise</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <label class="field-label" for="easing-type">Easing</label>
+                <select class="field-select" id="easing-type">
+                  <option value="ease-out" selected>Smooth</option>
+                  <option value="bounce">Bouncy</option>
+                  <option value="elastic">Elastic</option>
+                </select>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <label class="toggle-label" for="sound-toggle">
+                <span>Sound effects</span>
+                <div class="toggle-wrap">
+                  <input type="checkbox" id="sound-toggle" class="toggle-input" checked />
+                  <span class="toggle-track" aria-hidden="true"></span>
+                </div>
+              </label>
+              <label class="toggle-label" for="confetti-toggle">
+                <span>Confetti on win</span>
+                <div class="toggle-wrap">
+                  <input type="checkbox" id="confetti-toggle" class="toggle-input" checked />
+                  <span class="toggle-track" aria-hidden="true"></span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Background -->
+          <div class="panel-section">
+            <h3 class="panel-heading">Background</h3>
+            <div class="bg-options">
+              <label class="bg-opt">
+                <input type="radio" name="bg-type" value="solid" checked />
+                <span>Solid</span>
+              </label>
+              <label class="bg-opt">
+                <input type="radio" name="bg-type" value="gradient" />
+                <span>Gradient</span>
+              </label>
+            </div>
+            <div id="bg-solid-opts">
+              <input type="color" class="color-picker" id="bg-color" value="#f5f5e8" aria-label="Background colour" />
+            </div>
+            <div id="bg-gradient-opts" hidden>
+              <div class="color-row">
+                <input type="color" class="color-picker" id="bg-grad-from" value="#d4e8a0" aria-label="Gradient start" />
+                <span>→</span>
+                <input type="color" class="color-picker" id="bg-grad-to" value="#5bb88a" aria-label="Gradient end" />
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end builder-panel -->
+
+        <!-- Right: Preview -->
+        <div class="builder-preview" id="builder-preview">
+          <div class="preview-label">Live Preview</div>
+          <div class="wheel-stage" id="wheel-stage">
+            <div class="wheel-pointer-wrap" id="pointer-wrap" aria-hidden="true">
+              <svg class="pointer-svg" id="pointer-svg" viewBox="0 0 40 50" width="40" height="50">
+                <!-- Arrow pointer (default) -->
+                <polygon id="pointer-shape" points="20,48 2,4 38,4" fill="#1e8a3c" />
+              </svg>
+            </div>
+            <canvas id="wheel-canvas" width="420" height="420" role="img" aria-label="Spinning wheel preview"></canvas>
+            <button class="spin-btn" id="spin-btn" aria-label="Spin the wheel">
+              <span class="spin-btn-inner">SPIN</span>
+            </button>
+          </div>
+          <div class="preview-stats">
+            <span id="preview-item-count">0 items</span>
+            <span class="dot-sep" aria-hidden="true">·</span>
+            <span id="preview-spin-info">5s · Clockwise</span>
+          </div>
+        </div>
+
+      </div><!-- end builder-layout -->
+    </section>
+
+  </main><!-- end #app -->
+
+  <!-- ══════════════════════════════════════════
+       MODALS
+  ══════════════════════════════════════════ -->
+
+  <!-- Result Modal -->
+  <div class="modal-overlay" id="result-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="result-title">
+    <div class="modal result-modal">
+      <div class="confetti-container" id="confetti-container" aria-hidden="true"></div>
+      <div class="result-emoji" id="result-emoji">🎉</div>
+      <p class="result-label">Winner!</p>
+      <h2 class="result-winner" id="result-title">–</h2>
+      <p class="result-sub" id="result-sub"></p>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="spin-again-btn">Spin Again</button>
+        <button class="btn btn-outline" id="remove-winner-btn">Remove &amp; Spin</button>
+        <button class="btn btn-ghost" id="close-result-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Item Edit Modal -->
+  <div class="modal-overlay" id="item-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="item-modal-title">
+    <div class="modal item-modal">
+      <h3 class="modal-title" id="item-modal-title">Edit Item</h3>
+      <label class="field-label" for="item-text-input">Label</label>
+      <input class="field-input" id="item-text-input" type="text" placeholder="e.g. Pizza 🍕" maxlength="60" />
+      <label class="field-label" for="item-emoji-input">Emoji (optional)</label>
+      <input class="field-input" id="item-emoji-input" type="text" placeholder="🎯" maxlength="4" />
+      <label class="field-label" for="item-color-input">Segment Colour</label>
+      <input type="color" class="color-picker" id="item-color-input" value="#5bb88a" aria-label="Segment colour" />
+      <label class="field-label" for="item-weight-input">Weight / Probability</label>
+      <input class="field-input" id="item-weight-input" type="number" min="1" max="100" value="1" placeholder="1" />
+      <p class="field-hint">Higher weight = more likely to be picked.</p>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="cancel-item-btn">Cancel</button>
+        <button class="btn btn-primary" id="save-item-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wheel Card Context Menu -->
+  <div class="context-menu" id="context-menu" hidden role="menu" aria-label="Wheel options">
+    <button class="ctx-btn" data-action="open" role="menuitem">🎡 Open &amp; Spin</button>
+    <button class="ctx-btn" data-action="edit" role="menuitem">✏️ Edit</button>
+    <button class="ctx-btn" data-action="duplicate" role="menuitem">📋 Duplicate</button>
+    <button class="ctx-btn" data-action="rename" role="menuitem">🏷️ Rename</button>
+    <button class="ctx-btn" data-action="favorite" role="menuitem">⭐ Favourite</button>
+    <button class="ctx-btn ctx-btn-danger" data-action="delete" role="menuitem">🗑️ Delete</button>
+  </div>
+
+  <!-- Rename Modal -->
+  <div class="modal-overlay" id="rename-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="rename-title">
+    <div class="modal rename-modal">
+      <h3 class="modal-title" id="rename-title">Rename Wheel</h3>
+      <input class="field-input" id="rename-input" type="text" maxlength="60" />
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="cancel-rename-btn">Cancel</button>
+        <button class="btn btn-primary" id="confirm-rename-btn">Rename</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Delete Modal -->
+  <div class="modal-overlay" id="delete-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="delete-title">
+    <div class="modal delete-modal">
+      <div class="delete-icon" aria-hidden="true">🗑️</div>
+      <h3 class="modal-title" id="delete-title">Delete Wheel?</h3>
+      <p class="modal-body" id="delete-body">This cannot be undone.</p>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="cancel-delete-btn">Cancel</button>
+        <button class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
