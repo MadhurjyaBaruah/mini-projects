@@ -3,72 +3,135 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="SpinHub – A beautiful, customizable spinning wheel hub. Create, save, and spin unlimited custom wheels." />
-  <title>SpinHub – Spin Your Decisions</title>
+  <meta name="description" content="SpinHub - A beautiful, customizable spinning wheel hub." />
+  <title>SpinHub - Spin Your Decisions</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- ══════════════════════════════════════════
-       HEADER / NAV
-  ══════════════════════════════════════════ -->
-  <header class="site-header" role="banner">
+  <!-- STATIC NAV (visible before scroll) -->
+  <header class="static-header" id="static-header" role="banner">
     <div class="header-inner">
       <a class="logo" href="#" aria-label="SpinHub Home" id="logo-link">
-        <span class="logo-mark" aria-hidden="true">◎</span>
+        <svg class="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="18" cy="18" r="16" stroke="#1E8A3C" stroke-width="2.5"/>
+          <circle cx="18" cy="18" r="6"  fill="#1E8A3C"/>
+          <line x1="18" y1="2"  x2="18" y2="12" stroke="#1E8A3C" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="18" y1="24" x2="18" y2="34" stroke="#5BB88A" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="2"  y1="18" x2="12" y2="18" stroke="#5BB88A" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="24" y1="18" x2="34" y2="18" stroke="#1E8A3C" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
         <span class="logo-text">SpinHub</span>
       </a>
       <nav class="main-nav" aria-label="Primary navigation">
         <button class="nav-btn active" data-view="home" aria-current="page">Home</button>
         <button class="nav-btn" data-view="my-wheels">My Wheels</button>
-        <button class="nav-btn" data-view="builder">+ Create</button>
+        <button class="nav-btn nav-btn-create" data-view="builder">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Create
+        </button>
       </nav>
       <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
         <span></span><span></span><span></span>
       </button>
     </div>
-    <div class="mobile-menu" id="mobile-menu" hidden>
-      <button class="nav-btn" data-view="home">Home</button>
-      <button class="nav-btn" data-view="my-wheels">My Wheels</button>
-      <button class="nav-btn" data-view="builder">+ Create</button>
-    </div>
   </header>
 
-  <!-- ══════════════════════════════════════════
-       MAIN CONTENT
-  ══════════════════════════════════════════ -->
+  <!-- FLOATING NAV (appears on scroll) -->
+  <div class="floating-nav" id="floating-nav" aria-hidden="true">
+    <div class="floating-nav-inner">
+      <a class="float-logo" href="#" id="float-logo-link" tabindex="-1">
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22" aria-hidden="true">
+          <circle cx="18" cy="18" r="16" stroke="#1E8A3C" stroke-width="2.5"/>
+          <circle cx="18" cy="18" r="6"  fill="#1E8A3C"/>
+          <line x1="18" y1="2"  x2="18" y2="12" stroke="#1E8A3C" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="18" y1="24" x2="18" y2="34" stroke="#5BB88A" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="2"  y1="18" x2="12" y2="18" stroke="#5BB88A" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="24" y1="18" x2="34" y2="18" stroke="#1E8A3C" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <span>SpinHub</span>
+      </a>
+      <nav class="float-nav-links" aria-label="Floating navigation">
+        <button class="fnav-btn active" data-view="home" tabindex="-1">Home</button>
+        <button class="fnav-btn" data-view="my-wheels" tabindex="-1">My Wheels</button>
+        <button class="fnav-btn fnav-btn-create" data-view="builder" tabindex="-1">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true"><line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Create
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu" hidden role="dialog" aria-label="Mobile navigation">
+    <button class="nav-btn" data-view="home">Home</button>
+    <button class="nav-btn" data-view="my-wheels">My Wheels</button>
+    <button class="nav-btn nav-btn-create" data-view="builder">+ Create</button>
+  </div>
+
+  <!-- MAIN -->
   <main id="app" role="main">
 
-    <!-- ─── VIEW: HOME ─────────────────────── -->
+    <!-- HOME VIEW -->
     <section class="view" id="view-home" aria-label="Home">
 
+      <!-- HERO -->
       <div class="hero">
-        <div class="hero-text">
-          <p class="hero-eyebrow">Your decision-making hub</p>
-          <h1 class="hero-title">Spin it.<br>Decide it.</h1>
-          <p class="hero-sub">Pick from ready-made wheels or build your own. Save as many as you like and spin away.</p>
-          <div class="hero-actions">
-            <button class="btn btn-primary" data-view="builder">Create a Wheel</button>
-            <button class="btn btn-outline" data-scroll="templates">Browse Templates</button>
+        <div class="hero-bg-blobs" aria-hidden="true">
+          <div class="blob blob-1"></div>
+          <div class="blob blob-2"></div>
+          <div class="blob blob-3"></div>
+        </div>
+        <div class="hero-content">
+          <div class="hero-text">
+            <p class="hero-eyebrow">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="#5BB88A" stroke-width="1.5"/><circle cx="8" cy="8" r="3" fill="#5BB88A"/></svg>
+              Your decision-making hub
+            </p>
+            <h1 class="hero-title">Spin it.<br><span class="hero-title-accent">Decide it.</span></h1>
+            <p class="hero-sub">Pick from ready-made wheels or build your own. Save as many as you like and spin away.</p>
+            <div class="hero-actions">
+              <button class="btn btn-primary btn-lg" data-view="builder">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2C4.686 2 2 4.686 2 8s2.686 6 6 6 6-2.686 6-6-2.686-6-6-6zm0 10.5A4.5 4.5 0 1 1 8 3.5a4.5 4.5 0 0 1 0 9zM10.5 8l-4-2.5v5L10.5 8z" fill="currentColor"/></svg>
+                Create a Wheel
+              </button>
+              <button class="btn btn-outline btn-lg" data-scroll="templates">Browse Templates</button>
+            </div>
+            <div class="hero-stats">
+              <div class="hero-stat"><strong id="stat-wheels">12</strong><span>Templates</span></div>
+              <div class="hero-stat-divider" aria-hidden="true"></div>
+              <div class="hero-stat"><strong>Unlimited</strong><span>Custom Wheels</span></div>
+              <div class="hero-stat-divider" aria-hidden="true"></div>
+              <div class="hero-stat"><strong>Free</strong><span>Forever</span></div>
+            </div>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="hero-wheel-wrap">
+              <div class="hero-pointer-top">
+                <svg viewBox="0 0 32 40" width="32" height="40">
+                  <polygon points="16,38 2,4 30,4" fill="#1E8A3C" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.2))"/>
+                </svg>
+              </div>
+              <canvas id="hero-wheel" width="300" height="300"></canvas>
+              <div class="hero-wheel-glow"></div>
+            </div>
           </div>
         </div>
-        <div class="hero-visual" aria-hidden="true">
-          <canvas id="hero-wheel" width="280" height="280"></canvas>
-          <div class="hero-pointer">▼</div>
-        </div>
       </div>
 
-      <!-- Template Categories -->
+      <!-- TEMPLATE SECTION -->
       <div class="section-header" id="templates">
-        <h2 class="section-title">Ready-Made Wheels</h2>
-        <p class="section-sub">Tap any card to launch and spin instantly.</p>
+        <div class="section-label">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="#5BB88A"/><rect x="11" y="1" width="6" height="6" rx="1.5" fill="#1E8A3C"/><rect x="1" y="11" width="6" height="6" rx="1.5" fill="#1E8A3C"/><rect x="11" y="11" width="6" height="6" rx="1.5" fill="#5BB88A"/></svg>
+          Ready-Made Wheels
+        </div>
+        <h2 class="section-title">Pick a template, spin instantly</h2>
+        <p class="section-sub">No setup needed. Open any wheel and spin right away.</p>
       </div>
 
-      <div class="template-grid" id="template-grid" role="list">
-        <!-- Populated by JS -->
-      </div>
+      <div class="template-grid" id="template-grid" role="list"></div>
 
-      <!-- Recent Wheels -->
+      <!-- RECENTS -->
       <div class="section-header" id="recent-section" style="display:none">
         <h2 class="section-title">Recently Used</h2>
       </div>
@@ -76,37 +139,43 @@
 
     </section>
 
-    <!-- ─── VIEW: MY WHEELS ──────────────────── -->
+    <!-- MY WHEELS VIEW -->
     <section class="view" id="view-my-wheels" aria-label="My Wheels" hidden>
       <div class="page-header">
         <div>
           <h2 class="page-title">My Wheels</h2>
-          <p class="page-sub">All your saved and favourite wheels in one place.</p>
+          <p class="page-sub">All your saved wheels in one place.</p>
         </div>
-        <button class="btn btn-primary" data-view="builder">+ New Wheel</button>
+        <button class="btn btn-primary" data-view="builder">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          New Wheel
+        </button>
       </div>
 
       <div class="filter-bar">
         <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="favorites">⭐ Favorites</button>
+        <button class="filter-btn" data-filter="favorites">Favorites</button>
         <button class="filter-btn" data-filter="custom">Custom</button>
         <button class="filter-btn" data-filter="template">Templates</button>
-        <input class="search-input" type="search" placeholder="Search wheels…" id="wheel-search" aria-label="Search saved wheels" />
+        <div class="search-wrap">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="5.5" cy="5.5" r="4" stroke="#4A6852" stroke-width="1.5"/><line x1="9" y1="9" x2="13" y2="13" stroke="#4A6852" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <input class="search-input" type="search" placeholder="Search wheels..." id="wheel-search" aria-label="Search saved wheels" />
+        </div>
       </div>
 
-      <div class="wheels-grid" id="wheels-grid" role="list">
-        <!-- Populated by JS -->
-      </div>
+      <div class="wheels-grid" id="wheels-grid" role="list"></div>
 
       <div class="empty-state" id="wheels-empty" hidden>
-        <div class="empty-icon">🎡</div>
+        <div class="empty-icon-wrap">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true"><circle cx="28" cy="28" r="26" stroke="#C6DFA8" stroke-width="2.5"/><circle cx="28" cy="28" r="10" stroke="#5BB88A" stroke-width="2.5"/><line x1="28" y1="2" x2="28" y2="18" stroke="#5BB88A" stroke-width="2.5" stroke-linecap="round"/><line x1="28" y1="38" x2="28" y2="54" stroke="#C6DFA8" stroke-width="2.5" stroke-linecap="round"/><line x1="2" y1="28" x2="18" y2="28" stroke="#C6DFA8" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="28" x2="54" y2="28" stroke="#5BB88A" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </div>
         <h3>No wheels yet</h3>
         <p>Create your first wheel or pick a template to get started.</p>
         <button class="btn btn-primary" data-view="builder">Create a Wheel</button>
       </div>
     </section>
 
-    <!-- ─── VIEW: BUILDER ────────────────────── -->
+    <!-- BUILDER VIEW -->
     <section class="view" id="view-builder" aria-label="Wheel Builder" hidden>
       <div class="page-header">
         <div>
@@ -114,40 +183,41 @@
           <p class="page-sub">Add items, customise, then spin.</p>
         </div>
         <div class="builder-actions">
-          <button class="btn btn-outline" id="save-wheel-btn">Save Wheel</button>
-          <button class="btn btn-primary" id="go-spin-btn">Spin ↗</button>
+          <button class="btn btn-outline" id="save-wheel-btn">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 2h8l2 2v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2z" stroke="currentColor" stroke-width="1.4"/><rect x="4" y="2" width="4" height="3" rx="0.5" fill="currentColor"/><rect x="3" y="7" width="8" height="4" rx="0.5" fill="currentColor" opacity="0.3"/></svg>
+            Save Wheel
+          </button>
+          <button class="btn btn-primary" id="go-spin-btn">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1C3.686 1 1 3.686 1 7s2.686 6 6 6 6-2.686 6-6-2.686-6-6-6zm2.5 6.5-4 2.5V4l4 2.5z" fill="currentColor"/></svg>
+            Spin Now
+          </button>
         </div>
       </div>
 
       <div class="builder-layout">
-
-        <!-- Left: Settings -->
+        <!-- LEFT PANEL -->
         <div class="builder-panel" id="builder-panel">
 
-          <!-- Wheel Info -->
           <div class="panel-section">
             <h3 class="panel-heading">Wheel Info</h3>
             <label class="field-label" for="wheel-name">Title</label>
             <input class="field-input" id="wheel-name" type="text" placeholder="My Wheel" maxlength="60" />
             <label class="field-label" for="wheel-desc">Description (optional)</label>
-            <textarea class="field-input field-textarea" id="wheel-desc" placeholder="What's this wheel for?" rows="2" maxlength="200"></textarea>
+            <textarea class="field-input field-textarea" id="wheel-desc" placeholder="What is this wheel for?" rows="2" maxlength="200"></textarea>
           </div>
 
-          <!-- Items -->
           <div class="panel-section">
             <div class="panel-heading-row">
               <h3 class="panel-heading">Items</h3>
               <span class="item-count" id="item-count">0 items</span>
             </div>
-            <div class="items-list" id="items-list" role="list" aria-label="Wheel items">
-              <!-- Populated by JS -->
-            </div>
+            <div class="items-list" id="items-list" role="list" aria-label="Wheel items"></div>
             <button class="btn-add-item" id="add-item-btn" aria-label="Add item">
-              <span aria-hidden="true">+</span> Add Item
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Add Item
             </button>
           </div>
 
-          <!-- Wheel Appearance -->
           <div class="panel-section">
             <h3 class="panel-heading">Appearance</h3>
             <div class="settings-grid">
@@ -203,7 +273,6 @@
             </div>
           </div>
 
-          <!-- Animation -->
           <div class="panel-section">
             <h3 class="panel-heading">Animation</h3>
             <div class="settings-grid">
@@ -250,7 +319,6 @@
             </div>
           </div>
 
-          <!-- Background -->
           <div class="panel-section">
             <h3 class="panel-heading">Background</h3>
             <div class="bg-options">
@@ -269,21 +337,20 @@
             <div id="bg-gradient-opts" hidden>
               <div class="color-row">
                 <input type="color" class="color-picker" id="bg-grad-from" value="#d4e8a0" aria-label="Gradient start" />
-                <span>→</span>
+                <span class="color-arrow">to</span>
                 <input type="color" class="color-picker" id="bg-grad-to" value="#5bb88a" aria-label="Gradient end" />
               </div>
             </div>
           </div>
 
-        </div><!-- end builder-panel -->
+        </div>
 
-        <!-- Right: Preview -->
+        <!-- RIGHT PREVIEW -->
         <div class="builder-preview" id="builder-preview">
           <div class="preview-label">Live Preview</div>
           <div class="wheel-stage" id="wheel-stage">
             <div class="wheel-pointer-wrap" id="pointer-wrap" aria-hidden="true">
               <svg class="pointer-svg" id="pointer-svg" viewBox="0 0 40 50" width="40" height="50">
-                <!-- Arrow pointer (default) -->
                 <polygon id="pointer-shape" points="20,48 2,4 38,4" fill="#1e8a3c" />
               </svg>
             </div>
@@ -294,67 +361,91 @@
           </div>
           <div class="preview-stats">
             <span id="preview-item-count">0 items</span>
-            <span class="dot-sep" aria-hidden="true">·</span>
-            <span id="preview-spin-info">5s · Clockwise</span>
+            <span class="dot-sep" aria-hidden="true">.</span>
+            <span id="preview-spin-info">5s . Clockwise</span>
           </div>
         </div>
-
-      </div><!-- end builder-layout -->
+      </div>
     </section>
 
-  </main><!-- end #app -->
+  </main>
 
-  <!-- ══════════════════════════════════════════
-       MODALS
-  ══════════════════════════════════════════ -->
-
-  <!-- Result Modal -->
+  <!-- RESULT MODAL -->
   <div class="modal-overlay" id="result-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="result-title">
     <div class="modal result-modal">
       <div class="confetti-container" id="confetti-container" aria-hidden="true"></div>
-      <div class="result-emoji" id="result-emoji">🎉</div>
+      <div class="result-icon-wrap" id="result-icon-wrap" aria-hidden="true">
+        <svg class="result-trophy" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 8h24v18c0 9-6 16-12 16S20 35 20 26V8z" fill="#D4E8A0" stroke="#1E8A3C" stroke-width="2"/>
+          <path d="M20 14H10v6c0 5 4 9 10 10" stroke="#5BB88A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <path d="M44 14h10v6c0 5-4 9-10 10" stroke="#5BB88A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <rect x="28" y="42" width="8" height="8" rx="1" fill="#5BB88A"/>
+          <rect x="20" y="50" width="24" height="5" rx="2" fill="#1E8A3C"/>
+        </svg>
+        <div class="result-fireworks" id="result-fireworks"></div>
+      </div>
       <p class="result-label">Winner!</p>
-      <h2 class="result-winner" id="result-title">–</h2>
+      <h2 class="result-winner" id="result-title">-</h2>
       <p class="result-sub" id="result-sub"></p>
       <div class="result-actions">
         <button class="btn btn-primary" id="spin-again-btn">Spin Again</button>
-        <button class="btn btn-outline" id="remove-winner-btn">Remove &amp; Spin</button>
+        <button class="btn btn-outline" id="remove-winner-btn">Remove and Spin</button>
         <button class="btn btn-ghost" id="close-result-btn">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- Item Edit Modal -->
+  <!-- ITEM EDIT MODAL -->
   <div class="modal-overlay" id="item-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="item-modal-title">
     <div class="modal item-modal">
+      <button class="modal-close" id="cancel-item-btn" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><line x1="2" y1="2" x2="14" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="2" x2="2" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
       <h3 class="modal-title" id="item-modal-title">Edit Item</h3>
-      <label class="field-label" for="item-text-input">Label</label>
-      <input class="field-input" id="item-text-input" type="text" placeholder="e.g. Pizza 🍕" maxlength="60" />
-      <label class="field-label" for="item-emoji-input">Emoji (optional)</label>
-      <input class="field-input" id="item-emoji-input" type="text" placeholder="🎯" maxlength="4" />
+      <label class="field-label" for="item-text-input">Label (text, emoji, symbols - anything!)</label>
+      <input class="field-input" id="item-text-input" type="text" placeholder="e.g. Pizza, Option A, Yes!, any text..." maxlength="80" />
+      <p class="field-hint">You can use any text, emoji, numbers, or symbols freely.</p>
       <label class="field-label" for="item-color-input">Segment Colour</label>
-      <input type="color" class="color-picker" id="item-color-input" value="#5bb88a" aria-label="Segment colour" />
+      <input type="color" class="color-picker large" id="item-color-input" value="#5bb88a" aria-label="Segment colour" />
       <label class="field-label" for="item-weight-input">Weight / Probability</label>
       <input class="field-input" id="item-weight-input" type="number" min="1" max="100" value="1" placeholder="1" />
-      <p class="field-hint">Higher weight = more likely to be picked.</p>
+      <p class="field-hint">Higher weight = picked more often.</p>
       <div class="modal-footer">
-        <button class="btn btn-ghost" id="cancel-item-btn">Cancel</button>
-        <button class="btn btn-primary" id="save-item-btn">Save</button>
+        <button class="btn btn-ghost" id="cancel-item-btn-2">Cancel</button>
+        <button class="btn btn-primary" id="save-item-btn">Save Item</button>
       </div>
     </div>
   </div>
 
-  <!-- Wheel Card Context Menu -->
+  <!-- CONTEXT MENU -->
   <div class="context-menu" id="context-menu" hidden role="menu" aria-label="Wheel options">
-    <button class="ctx-btn" data-action="open" role="menuitem">🎡 Open &amp; Spin</button>
-    <button class="ctx-btn" data-action="edit" role="menuitem">✏️ Edit</button>
-    <button class="ctx-btn" data-action="duplicate" role="menuitem">📋 Duplicate</button>
-    <button class="ctx-btn" data-action="rename" role="menuitem">🏷️ Rename</button>
-    <button class="ctx-btn" data-action="favorite" role="menuitem">⭐ Favourite</button>
-    <button class="ctx-btn ctx-btn-danger" data-action="delete" role="menuitem">🗑️ Delete</button>
+    <button class="ctx-btn" data-action="open" role="menuitem">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 7l-4 2.5V4.5L9.5 7z" fill="currentColor"/></svg>
+      Open and Spin
+    </button>
+    <button class="ctx-btn" data-action="edit" role="menuitem">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 10L9 3l2 2-7 7H2v-2z" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M9 3l2 2" stroke="currentColor" stroke-width="1.4"/></svg>
+      Edit
+    </button>
+    <button class="ctx-btn" data-action="duplicate" role="menuitem">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="1" y="4" width="8" height="9" rx="1" stroke="currentColor" stroke-width="1.4"/><path d="M4 4V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-2" stroke="currentColor" stroke-width="1.4"/></svg>
+      Duplicate
+    </button>
+    <button class="ctx-btn" data-action="rename" role="menuitem">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 10h12M4 8V4h2l1 1.5L8 4h2v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Rename
+    </button>
+    <button class="ctx-btn" data-action="favorite" role="menuitem">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1l1.5 3.5 3.5.3-2.5 2.5.7 3.7L7 9 3.8 11l.7-3.7L2 4.8l3.5-.3L7 1z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      Favourite
+    </button>
+    <button class="ctx-btn ctx-btn-danger" data-action="delete" role="menuitem">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 4h10M5 4V2h4v2M5 6v5M9 6v5M3 4l.5 8h7L11 4H3z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Delete
+    </button>
   </div>
 
-  <!-- Rename Modal -->
+  <!-- RENAME MODAL -->
   <div class="modal-overlay" id="rename-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="rename-title">
     <div class="modal rename-modal">
       <h3 class="modal-title" id="rename-title">Rename Wheel</h3>
@@ -366,10 +457,12 @@
     </div>
   </div>
 
-  <!-- Confirm Delete Modal -->
+  <!-- DELETE MODAL -->
   <div class="modal-overlay" id="delete-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="delete-title">
     <div class="modal delete-modal">
-      <div class="delete-icon" aria-hidden="true">🗑️</div>
+      <div class="delete-icon-wrap" aria-hidden="true">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="#FDE8E8"/><path d="M16 18h16M20 18V15h8v3M20 20v11M28 20v11M17 18l1 17h12l1-17H17z" stroke="#c0392b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
       <h3 class="modal-title" id="delete-title">Delete Wheel?</h3>
       <p class="modal-body" id="delete-body">This cannot be undone.</p>
       <div class="modal-footer">
@@ -379,7 +472,7 @@
     </div>
   </div>
 
-  <!-- Toast Notification -->
+  <!-- TOAST -->
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="script.js"></script>

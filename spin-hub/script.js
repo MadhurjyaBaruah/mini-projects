@@ -1,112 +1,96 @@
 /**
- * SpinHub – script.js
- * Modular vanilla JS spinner hub.
+ * SpinHub - script.js
  * Sections:
- *   1. Constants & State
- *   2. Local Storage
- *   3. Template Data
- *   4. Router / Views
- *   5. Hero Wheel
- *   6. Home View
- *   7. My Wheels View
- *   8. Builder View
- *   9. Wheel Canvas Renderer
- *  10. Spin Engine
- *  11. Result Modal
- *  12. Item Editor Modal
- *  13. Context Menu
- *  14. Confetti
- *  15. Toast
- *  16. Drag & Drop
- *  17. Utilities
- *  18. Init
+ *  1. Constants & State
+ *  2. Local Storage
+ *  3. Template Data (SVG icons, no em-dashes)
+ *  4. Router
+ *  5. Scroll / Floating Nav
+ *  6. Hero Wheel
+ *  7. Home View
+ *  8. My Wheels View
+ *  9. Builder View
+ * 10. Wheel Renderer
+ * 11. Spin Engine
+ * 12. Result Modal
+ * 13. Item Editor Modal
+ * 14. Context Menu
+ * 15. Confetti
+ * 16. Toast
+ * 17. Drag and Drop
+ * 18. Sound FX
+ * 19. Utilities
+ * 20. Init
  */
 
-/* ═══════════════════════════════════════════════════════════
+/* ============================================================
    1. CONSTANTS & STATE
-═══════════════════════════════════════════════════════════ */
-
+============================================================ */
 const STORAGE_KEYS = {
-  WHEELS:       'spinHub_wheels',
-  RECENTS:      'spinHub_recents',
-  LAST_OPENED:  'spinHub_lastOpened',
-  PREFS:        'spinHub_prefs',
+  WHEELS:  'spinHub_wheels',
+  RECENTS: 'spinHub_recents',
+  PREFS:   'spinHub_prefs',
 };
 
 const PALETTE = {
-  bg:       '#F5F5E8',
-  surface:  '#EEF4DC',
-  mint:     '#D4E8A0',
-  teal:     '#5BB88A',
-  forest:   '#1E8A3C',
-  text:     '#1A2B1F',
+  bg:     '#F5F5E8',
+  surface:'#EEF4DC',
+  mint:   '#D4E8A0',
+  teal:   '#5BB88A',
+  forest: '#1E8A3C',
+  text:   '#1A2B1F',
 };
 
-// Colour pool for auto-assigning segment colours
 const SEGMENT_COLORS = [
-  '#5BB88A', '#1E8A3C', '#D4E8A0', '#8FD1B0',
-  '#A8C888', '#3CA86A', '#6DCFA0', '#2E9E50',
-  '#B8E4C8', '#4EB87A', '#C6DFA8', '#74C494',
+  '#5BB88A','#1E8A3C','#8FD1B0','#3CA86A',
+  '#A8C888','#6DCFA0','#2E9E50','#B8E4C8',
+  '#4EB87A','#74C494','#C6DFA8','#D4E8A0',
 ];
 
-/** Central application state */
 const state = {
-  currentView:   'home',
-  wheels:        [],   // all saved wheels
-  recents:       [],   // array of wheel IDs (most recent first)
-  prefs:         {},
-  editingWheelId: null,
-
-  // Builder working copy
+  currentView:      'home',
+  wheels:           [],
+  recents:          [],
+  prefs:            {},
+  wheelFilter:      'all',
+  wheelSearch:      '',
+  ctxTargetId:      null,
+  deleteTargetId:   null,
+  renameTargetId:   null,
+  editingItemIndex: null,
   builder: {
-    id:          null,
-    name:        'My Wheel',
-    desc:        '',
-    items:       [],
+    id:    null,
+    name:  'My Wheel',
+    desc:  '',
+    items: [],
     settings: {
-      size:         420,
-      fontFamily:   'system-ui',
-      fontSize:     14,
-      borderWidth:  2,
-      pointerStyle: 'arrow',
-      centerStyle:  'circle',
-      spinDuration: 5000,
-      spinDirection:'cw',
-      easingType:   'ease-out',
-      soundOn:      true,
-      confettiOn:   true,
-      bgType:       'solid',
-      bgColor:      '#F5F5E8',
-      bgGradFrom:   '#D4E8A0',
-      bgGradTo:     '#5BB88A',
+      size:          420,
+      fontFamily:    'system-ui',
+      fontSize:      14,
+      borderWidth:   2,
+      pointerStyle:  'arrow',
+      centerStyle:   'circle',
+      spinDuration:  5000,
+      spinDirection: 'cw',
+      easingType:    'ease-out',
+      soundOn:       true,
+      confettiOn:    true,
+      bgType:        'solid',
+      bgColor:       '#F5F5E8',
+      bgGradFrom:    '#D4E8A0',
+      bgGradTo:      '#5BB88A',
     },
   },
-
-  // Spinner runtime
   spin: {
-    isSpinning:  false,
-    currentAngle:0,   // radians
-    animFrameId: null,
+    isSpinning:   false,
+    currentAngle: 0,
+    animFrameId:  null,
   },
-
-  // Context menu target
-  ctxTargetId: null,
-  // Delete confirmation target
-  deleteTargetId: null,
-  // Rename target
-  renameTargetId: null,
-  // Item editor
-  editingItemIndex: null,
-
-  // My Wheels filter
-  wheelFilter: 'all',
-  wheelSearch: '',
 };
 
-/* ═══════════════════════════════════════════════════════════
+/* ============================================================
    2. LOCAL STORAGE
-═══════════════════════════════════════════════════════════ */
-
+============================================================ */
 const Storage = {
   load() {
     try {
@@ -114,259 +98,263 @@ const Storage = {
       state.recents = JSON.parse(localStorage.getItem(STORAGE_KEYS.RECENTS)) || [];
       state.prefs   = JSON.parse(localStorage.getItem(STORAGE_KEYS.PREFS))   || {};
     } catch(e) {
-      console.warn('SpinHub: storage parse error', e);
       state.wheels = []; state.recents = []; state.prefs = {};
     }
   },
-
-  saveWheels() {
-    localStorage.setItem(STORAGE_KEYS.WHEELS, JSON.stringify(state.wheels));
-  },
-
-  saveRecents() {
-    localStorage.setItem(STORAGE_KEYS.RECENTS, JSON.stringify(state.recents));
-  },
-
-  savePrefs() {
-    localStorage.setItem(STORAGE_KEYS.PREFS, JSON.stringify(state.prefs));
-  },
-
-  setLastOpened(id) {
-    localStorage.setItem(STORAGE_KEYS.LAST_OPENED, id);
-  },
-
-  getLastOpened() {
-    return localStorage.getItem(STORAGE_KEYS.LAST_OPENED);
-  },
+  saveWheels()  { localStorage.setItem(STORAGE_KEYS.WHEELS,  JSON.stringify(state.wheels));  },
+  saveRecents() { localStorage.setItem(STORAGE_KEYS.RECENTS, JSON.stringify(state.recents)); },
 };
 
-/* ═══════════════════════════════════════════════════════════
+/* ============================================================
    3. TEMPLATE DATA
-═══════════════════════════════════════════════════════════ */
+   SVG icons inline - no emoji icons on cards
+============================================================ */
+
+/* Each template has an svgIcon string rendered in the card icon wrap */
+const TPL_ICONS = {
+  food: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="#1E8A3C" stroke-width="1.8"/><path d="M8 10c1-2 4-2 4 0s3 2 4 0" stroke="#5BB88A" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="14" r="1.2" fill="#5BB88A"/><circle cx="14" cy="14" r="1.2" fill="#1E8A3C"/><circle cx="12" cy="12" r="1" fill="#3CA86A"/></svg>`,
+  movie: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#1E8A3C" stroke-width="1.8"/><path d="M3 9h18M3 15h18M9 5v14M15 5v14" stroke="#5BB88A" stroke-width="1.3"/></svg>`,
+  study: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v14H4z" stroke="#1E8A3C" stroke-width="1.8" rx="1"/><path d="M8 10h8M8 13h5" stroke="#5BB88A" stroke-width="1.5" stroke-linecap="round"/><path d="M4 4l8-2 8 2" stroke="#3CA86A" stroke-width="1.4" stroke-linejoin="round"/></svg>`,
+  team: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke="#1E8A3C" stroke-width="1.7"/><circle cx="15" cy="8" r="3" stroke="#5BB88A" stroke-width="1.7"/><path d="M3 19c0-3 2.7-5 6-5h6c3.3 0 6 2 6 5" stroke="#1E8A3C" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+  prize: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M8 3h8v9c0 4-2 6-4 6s-4-2-4-6V3z" stroke="#1E8A3C" stroke-width="1.7"/><path d="M8 7H4v3c0 2.5 2 4 4 4" stroke="#5BB88A" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M16 7h4v3c0 2.5-2 4-4 4" stroke="#5BB88A" stroke-width="1.6" stroke-linecap="round" fill="none"/><rect x="10" y="18" width="4" height="3" rx="0.5" fill="#5BB88A"/><rect x="7" y="21" width="10" height="2.5" rx="1" fill="#1E8A3C"/></svg>`,
+  truth: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#1E8A3C" stroke-width="1.8"/><path d="M9 10.5c0-1.5 1.3-3 3-3s3 1.5 3 3c0 1.5-1.5 2.5-3 2.5" stroke="#5BB88A" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1" fill="#1E8A3C"/></svg>`,
+  workout: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="5" r="2" stroke="#1E8A3C" stroke-width="1.6"/><path d="M9 7v6l3 4" stroke="#1E8A3C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10l3 1 4-1" stroke="#5BB88A" stroke-width="1.5" stroke-linecap="round"/><path d="M12 11l4-2" stroke="#3CA86A" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  game: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="12" rx="4" stroke="#1E8A3C" stroke-width="1.7"/><path d="M9 11v4M7 13h4" stroke="#5BB88A" stroke-width="1.6" stroke-linecap="round"/><circle cx="15" cy="11.5" r="1" fill="#5BB88A"/><circle cx="17" cy="13.5" r="1" fill="#1E8A3C"/></svg>`,
+  number: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><text x="4" y="17" font-size="13" font-weight="700" fill="#1E8A3C" font-family="system-ui">1</text><text x="12" y="17" font-size="13" font-weight="700" fill="#5BB88A" font-family="system-ui">2</text><circle cx="12" cy="12" r="9" stroke="#C6DFA8" stroke-width="1.5" stroke-dasharray="4 2"/></svg>`,
+  country: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#1E8A3C" stroke-width="1.7"/><path d="M3 12h18M12 3c-3 3-3 13 0 18M12 3c3 3 3 13 0 18" stroke="#5BB88A" stroke-width="1.3"/></svg>`,
+  decision: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 4v8m0 0l-3-3m3 3l3-3" stroke="#1E8A3C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><rect x="5" y="14" width="6" height="6" rx="1.5" fill="#5BB88A"/><rect x="13" y="14" width="6" height="6" rx="1.5" fill="#D4E8A0" stroke="#5BB88A" stroke-width="1.3"/></svg>`,
+  custom: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#5BB88A" stroke-width="1.7" stroke-dasharray="3 2"/><line x1="12" y1="7" x2="12" y2="17" stroke="#1E8A3C" stroke-width="2" stroke-linecap="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="#1E8A3C" stroke-width="2" stroke-linecap="round"/></svg>`,
+};
 
 const TEMPLATES = [
   {
-    id: 'tpl-food',
-    name: 'Food Picker',
-    desc: 'Can\'t decide where to eat? Let the wheel choose!',
-    icon: '🍕',
-    category: 'Lifestyle',
-    items: [
-      { text: 'Pizza', emoji: '🍕', color: '#5BB88A', weight: 1 },
-      { text: 'Sushi',  emoji: '🍣', color: '#1E8A3C', weight: 1 },
-      { text: 'Tacos',  emoji: '🌮', color: '#D4E8A0', weight: 1 },
-      { text: 'Burger', emoji: '🍔', color: '#8FD1B0', weight: 1 },
-      { text: 'Pasta',  emoji: '🍝', color: '#3CA86A', weight: 1 },
-      { text: 'Salad',  emoji: '🥗', color: '#A8C888', weight: 1 },
-      { text: 'Ramen',  emoji: '🍜', color: '#6DCFA0', weight: 1 },
-      { text: 'Curry',  emoji: '🍛', color: '#2E9E50', weight: 1 },
+    id:'tpl-food', name:'Food Picker', category:'Lifestyle',
+    desc:'Cannot decide where to eat? Let the wheel choose.',
+    svgIcon: TPL_ICONS.food,
+    items:[
+      {text:'Pizza',      color:'#5BB88A',weight:1},
+      {text:'Sushi',      color:'#1E8A3C',weight:1},
+      {text:'Tacos',      color:'#D4E8A0',weight:1},
+      {text:'Burger',     color:'#8FD1B0',weight:1},
+      {text:'Pasta',      color:'#3CA86A',weight:1},
+      {text:'Salad',      color:'#A8C888',weight:1},
+      {text:'Ramen',      color:'#6DCFA0',weight:1},
+      {text:'Curry',      color:'#2E9E50',weight:1},
     ],
   },
   {
-    id: 'tpl-movie',
-    name: 'Movie Picker',
-    desc: 'Pick a genre for movie night.',
-    icon: '🎬',
-    category: 'Fun',
-    items: [
-      { text: 'Action',   emoji: '💥', color: '#5BB88A', weight: 1 },
-      { text: 'Comedy',   emoji: '😂', color: '#1E8A3C', weight: 1 },
-      { text: 'Horror',   emoji: '👻', color: '#D4E8A0', weight: 1 },
-      { text: 'Romance',  emoji: '💕', color: '#8FD1B0', weight: 1 },
-      { text: 'Sci-Fi',   emoji: '🚀', color: '#3CA86A', weight: 1 },
-      { text: 'Thriller', emoji: '🔪', color: '#A8C888', weight: 1 },
-      { text: 'Drama',    emoji: '🎭', color: '#6DCFA0', weight: 1 },
-      { text: 'Anime',    emoji: '⛩️', color: '#2E9E50', weight: 1 },
+    id:'tpl-movie', name:'Movie Picker', category:'Fun',
+    desc:'Pick a genre for movie night.',
+    svgIcon: TPL_ICONS.movie,
+    items:[
+      {text:'Action',   color:'#5BB88A',weight:1},
+      {text:'Comedy',   color:'#1E8A3C',weight:1},
+      {text:'Horror',   color:'#D4E8A0',weight:1},
+      {text:'Romance',  color:'#8FD1B0',weight:1},
+      {text:'Sci-Fi',   color:'#3CA86A',weight:1},
+      {text:'Thriller', color:'#A8C888',weight:1},
+      {text:'Drama',    color:'#6DCFA0',weight:1},
+      {text:'Anime',    color:'#2E9E50',weight:1},
     ],
   },
   {
-    id: 'tpl-study',
-    name: 'Study Spinner',
-    desc: 'Rotate through subjects to keep revision fresh.',
-    icon: '📚',
-    category: 'Education',
-    items: [
-      { text: 'Maths',    emoji: '➗', color: '#5BB88A', weight: 1 },
-      { text: 'Science',  emoji: '🔬', color: '#1E8A3C', weight: 1 },
-      { text: 'History',  emoji: '📜', color: '#D4E8A0', weight: 1 },
-      { text: 'English',  emoji: '📝', color: '#8FD1B0', weight: 1 },
-      { text: 'Geography',emoji: '🌍', color: '#3CA86A', weight: 1 },
-      { text: 'Art',      emoji: '🎨', color: '#A8C888', weight: 1 },
+    id:'tpl-study', name:'Study Spinner', category:'Education',
+    desc:'Rotate through subjects to keep revision fresh.',
+    svgIcon: TPL_ICONS.study,
+    items:[
+      {text:'Maths',     color:'#5BB88A',weight:1},
+      {text:'Science',   color:'#1E8A3C',weight:1},
+      {text:'History',   color:'#D4E8A0',weight:1},
+      {text:'English',   color:'#8FD1B0',weight:1},
+      {text:'Geography', color:'#3CA86A',weight:1},
+      {text:'Art',       color:'#A8C888',weight:1},
     ],
   },
   {
-    id: 'tpl-team',
-    name: 'Team Picker',
-    desc: 'Randomly assign team members to roles or tasks.',
-    icon: '👥',
-    category: 'Events',
-    items: [
-      { text: 'Team A',  emoji: '🔵', color: '#5BB88A', weight: 1 },
-      { text: 'Team B',  emoji: '🟢', color: '#1E8A3C', weight: 1 },
-      { text: 'Team C',  emoji: '🟡', color: '#D4E8A0', weight: 1 },
-      { text: 'Team D',  emoji: '🔴', color: '#8FD1B0', weight: 1 },
+    id:'tpl-team', name:'Team Picker', category:'Events',
+    desc:'Randomly assign members to roles or tasks.',
+    svgIcon: TPL_ICONS.team,
+    items:[
+      {text:'Team A', color:'#5BB88A',weight:1},
+      {text:'Team B', color:'#1E8A3C',weight:1},
+      {text:'Team C', color:'#D4E8A0',weight:1},
+      {text:'Team D', color:'#8FD1B0',weight:1},
     ],
   },
   {
-    id: 'tpl-prize',
-    name: 'Prize Wheel',
-    desc: 'Lucky draw for events and giveaways.',
-    icon: '🏆',
-    category: 'Events',
-    items: [
-      { text: '1st Prize',  emoji: '🥇', color: '#1E8A3C', weight: 1 },
-      { text: '2nd Prize',  emoji: '🥈', color: '#5BB88A', weight: 2 },
-      { text: '3rd Prize',  emoji: '🥉', color: '#8FD1B0', weight: 3 },
-      { text: 'Try Again',  emoji: '🔄', color: '#D4E8A0', weight: 6 },
-      { text: 'Free Spin',  emoji: '🎡', color: '#A8C888', weight: 4 },
-      { text: 'Bonus!',     emoji: '🎁', color: '#3CA86A', weight: 2 },
+    id:'tpl-prize', name:'Prize Wheel', category:'Events',
+    desc:'Lucky draw for events and giveaways.',
+    svgIcon: TPL_ICONS.prize,
+    items:[
+      {text:'1st Prize', color:'#1E8A3C',weight:1},
+      {text:'2nd Prize', color:'#5BB88A',weight:2},
+      {text:'3rd Prize', color:'#8FD1B0',weight:3},
+      {text:'Try Again', color:'#D4E8A0',weight:6},
+      {text:'Free Spin', color:'#A8C888',weight:4},
+      {text:'Bonus!',    color:'#3CA86A',weight:2},
     ],
   },
   {
-    id: 'tpl-truth',
-    name: 'Truth or Dare',
-    desc: 'Classic party game spinner.',
-    icon: '🎭',
-    category: 'Fun',
-    items: [
-      { text: 'Truth',   emoji: '💬', color: '#5BB88A', weight: 1 },
-      { text: 'Dare',    emoji: '🎯', color: '#1E8A3C', weight: 1 },
-      { text: 'Truth',   emoji: '💬', color: '#8FD1B0', weight: 1 },
-      { text: 'Dare',    emoji: '🎯', color: '#3CA86A', weight: 1 },
-      { text: 'Wild Card',emoji:'🃏', color: '#D4E8A0', weight: 1 },
+    id:'tpl-truth', name:'Truth or Dare', category:'Fun',
+    desc:'Classic party game spinner.',
+    svgIcon: TPL_ICONS.truth,
+    items:[
+      {text:'Truth',    color:'#5BB88A',weight:1},
+      {text:'Dare',     color:'#1E8A3C',weight:1},
+      {text:'Truth',    color:'#8FD1B0',weight:1},
+      {text:'Dare',     color:'#3CA86A',weight:1},
+      {text:'Wild Card',color:'#D4E8A0',weight:1},
     ],
   },
   {
-    id: 'tpl-workout',
-    name: 'Workout',
-    desc: 'Randomise your exercise routine.',
-    icon: '💪',
-    category: 'Lifestyle',
-    items: [
-      { text: 'Push-Ups',    emoji: '💪', color: '#5BB88A', weight: 1 },
-      { text: 'Squats',      emoji: '🏋️', color: '#1E8A3C', weight: 1 },
-      { text: 'Plank',       emoji: '🧘', color: '#D4E8A0', weight: 1 },
-      { text: 'Burpees',     emoji: '🔥', color: '#8FD1B0', weight: 1 },
-      { text: 'Jumping Jacks',emoji:'🤸', color: '#3CA86A', weight: 1 },
-      { text: 'Run 5 Min',   emoji: '🏃', color: '#A8C888', weight: 1 },
-      { text: 'Lunges',      emoji: '🦵', color: '#6DCFA0', weight: 1 },
+    id:'tpl-workout', name:'Workout', category:'Lifestyle',
+    desc:'Randomise your exercise routine.',
+    svgIcon: TPL_ICONS.workout,
+    items:[
+      {text:'Push-Ups',      color:'#5BB88A',weight:1},
+      {text:'Squats',        color:'#1E8A3C',weight:1},
+      {text:'Plank',         color:'#D4E8A0',weight:1},
+      {text:'Burpees',       color:'#8FD1B0',weight:1},
+      {text:'Jumping Jacks', color:'#3CA86A',weight:1},
+      {text:'Run 5 Min',     color:'#A8C888',weight:1},
+      {text:'Lunges',        color:'#6DCFA0',weight:1},
     ],
   },
   {
-    id: 'tpl-game',
-    name: 'Game Challenge',
-    desc: 'Spin for your next gaming challenge.',
-    icon: '🎮',
-    category: 'Gaming',
-    items: [
-      { text: 'No HUD',      emoji: '👁️', color: '#5BB88A', weight: 1 },
-      { text: 'Speed Run',   emoji: '⚡', color: '#1E8A3C', weight: 1 },
-      { text: 'No Deaths',   emoji: '💀', color: '#D4E8A0', weight: 1 },
-      { text: 'Low %',       emoji: '📉', color: '#8FD1B0', weight: 1 },
-      { text: 'Max Difficulty',emoji:'🔥',color: '#3CA86A', weight: 1 },
-      { text: 'Random Class',emoji: '🎲', color: '#A8C888', weight: 1 },
+    id:'tpl-game', name:'Game Challenge', category:'Gaming',
+    desc:'Spin for your next gaming challenge.',
+    svgIcon: TPL_ICONS.game,
+    items:[
+      {text:'No HUD',         color:'#5BB88A',weight:1},
+      {text:'Speed Run',      color:'#1E8A3C',weight:1},
+      {text:'No Deaths',      color:'#D4E8A0',weight:1},
+      {text:'Low %',          color:'#8FD1B0',weight:1},
+      {text:'Max Difficulty', color:'#3CA86A',weight:1},
+      {text:'Random Class',   color:'#A8C888',weight:1},
     ],
   },
   {
-    id: 'tpl-number',
-    name: 'Random Number',
-    desc: 'Pick a number from 1 to 10.',
-    icon: '🔢',
-    category: 'Fun',
-    items: Array.from({ length: 10 }, (_, i) => ({
-      text: String(i + 1), emoji: '', color: SEGMENT_COLORS[i % SEGMENT_COLORS.length], weight: 1,
+    id:'tpl-number', name:'Random Number', category:'Fun',
+    desc:'Pick a number from 1 to 10.',
+    svgIcon: TPL_ICONS.number,
+    items: Array.from({length:10},(_,i)=>({
+      text:String(i+1), color:SEGMENT_COLORS[i%SEGMENT_COLORS.length], weight:1,
     })),
   },
   {
-    id: 'tpl-country',
-    name: 'Country Picker',
-    desc: 'Spin the globe – where next?',
-    icon: '🌍',
-    category: 'Lifestyle',
-    items: [
-      { text: 'Japan',   emoji: '🇯🇵', color: '#5BB88A', weight: 1 },
-      { text: 'Italy',   emoji: '🇮🇹', color: '#1E8A3C', weight: 1 },
-      { text: 'Brazil',  emoji: '🇧🇷', color: '#D4E8A0', weight: 1 },
-      { text: 'Canada',  emoji: '🇨🇦', color: '#8FD1B0', weight: 1 },
-      { text: 'Australia',emoji:'🇦🇺', color: '#3CA86A', weight: 1 },
-      { text: 'India',   emoji: '🇮🇳', color: '#A8C888', weight: 1 },
-      { text: 'Egypt',   emoji: '🇪🇬', color: '#6DCFA0', weight: 1 },
-      { text: 'Mexico',  emoji: '🇲🇽', color: '#2E9E50', weight: 1 },
+    id:'tpl-country', name:'Country Picker', category:'Lifestyle',
+    desc:'Spin the globe. Where next?',
+    svgIcon: TPL_ICONS.country,
+    items:[
+      {text:'Japan',     color:'#5BB88A',weight:1},
+      {text:'Italy',     color:'#1E8A3C',weight:1},
+      {text:'Brazil',    color:'#D4E8A0',weight:1},
+      {text:'Canada',    color:'#8FD1B0',weight:1},
+      {text:'Australia', color:'#3CA86A',weight:1},
+      {text:'India',     color:'#A8C888',weight:1},
+      {text:'Egypt',     color:'#6DCFA0',weight:1},
+      {text:'Mexico',    color:'#2E9E50',weight:1},
     ],
   },
   {
-    id: 'tpl-decision',
-    name: 'Decision Maker',
-    desc: 'Yes, No or Maybe – make up your mind!',
-    icon: '🤔',
-    category: 'Fun',
-    items: [
-      { text: 'Yes!',       emoji: '✅', color: '#1E8A3C', weight: 2 },
-      { text: 'No',         emoji: '❌', color: '#5BB88A', weight: 2 },
-      { text: 'Maybe',      emoji: '🤷', color: '#D4E8A0', weight: 2 },
-      { text: 'Ask again',  emoji: '🔄', color: '#A8C888', weight: 1 },
-      { text: 'Definitely!',emoji: '🎯', color: '#3CA86A', weight: 1 },
+    id:'tpl-decision', name:'Decision Maker', category:'Fun',
+    desc:'Yes, No or Maybe. Make up your mind!',
+    svgIcon: TPL_ICONS.decision,
+    items:[
+      {text:'Yes!',        color:'#1E8A3C',weight:2},
+      {text:'No',          color:'#5BB88A',weight:2},
+      {text:'Maybe',       color:'#D4E8A0',weight:2},
+      {text:'Ask again',   color:'#A8C888',weight:1},
+      {text:'Definitely!', color:'#3CA86A',weight:1},
     ],
   },
   {
-    id: 'tpl-custom',
-    name: 'Custom Spinner',
-    desc: 'Build your own wheel from scratch.',
-    icon: '✨',
-    category: 'Custom',
-    items: [],
+    id:'tpl-custom', name:'Custom Spinner', category:'Custom',
+    desc:'Build your own wheel from scratch.',
+    svgIcon: TPL_ICONS.custom,
+    items:[],
   },
 ];
 
-/* ═══════════════════════════════════════════════════════════
-   4. ROUTER / VIEWS
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   4. ROUTER
+============================================================ */
 const Router = {
-  /** Navigate to a named view */
   go(view) {
-    // Hide all views
-    document.querySelectorAll('.view').forEach(el => el.hidden = true);
-
-    // Show target view
-    const target = document.getElementById(`view-${view}`);
+    document.querySelectorAll('.view').forEach(el => { el.hidden = true; });
+    const target = document.getElementById('view-' + view);
     if (target) target.hidden = false;
 
-    // Update nav button states
-    document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.view === view);
-      btn.setAttribute('aria-current', btn.dataset.view === view ? 'page' : 'false');
+    // Update both navbars
+    ['[data-view]'].forEach(sel => {
+      document.querySelectorAll(sel).forEach(btn => {
+        const isActive = btn.dataset.view === view;
+        btn.classList.toggle('active', isActive);
+        if (btn.getAttribute('aria-current') !== null) {
+          btn.setAttribute('aria-current', isActive ? 'page' : 'false');
+        }
+      });
     });
+
+    // Close mobile menu
+    const mob = document.getElementById('mobile-menu');
+    const ham = document.getElementById('hamburger');
+    mob.hidden = true;
+    ham.setAttribute('aria-expanded', 'false');
 
     state.currentView = view;
 
-    // Close mobile menu
-    const mobileMenu = document.getElementById('mobile-menu');
-    const hamburger  = document.getElementById('hamburger');
-    mobileMenu.hidden = true;
-    hamburger.setAttribute('aria-expanded', 'false');
-
-    // View-specific init
-    switch (view) {
-      case 'home':      HomeView.render();     break;
-      case 'my-wheels': MyWheelsView.render(); break;
-      case 'builder':   BuilderView.render();  break;
-    }
+    if (view === 'home')      HomeView.render();
+    if (view === 'my-wheels') MyWheelsView.render();
+    if (view === 'builder')   BuilderView.render();
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   5. HERO WHEEL (decorative animated wheel on home page)
-═══════════════════════════════════════════════════════════ */
+/* ============================================================
+   5. SCROLL / FLOATING NAV
+============================================================ */
+const FloatingNav = {
+  floatEl: null,
+  staticHeaderEl: null,
+  ticking: false,
 
+  init() {
+    this.floatEl       = document.getElementById('floating-nav');
+    this.staticHeaderEl = document.getElementById('static-header');
+    if (!this.floatEl) return;
+    window.addEventListener('scroll', () => this.onScroll(), { passive: true });
+  },
+
+  onScroll() {
+    if (this.ticking) return;
+    this.ticking = true;
+    requestAnimationFrame(() => {
+      const scrollY = window.scrollY;
+      const threshold = this.staticHeaderEl ? this.staticHeaderEl.offsetHeight + 20 : 84;
+      if (scrollY > threshold) {
+        this.floatEl.classList.add('visible');
+        this.floatEl.setAttribute('aria-hidden', 'false');
+        // Make float buttons focusable
+        this.floatEl.querySelectorAll('button, a').forEach(el => el.removeAttribute('tabindex'));
+      } else {
+        this.floatEl.classList.remove('visible');
+        this.floatEl.setAttribute('aria-hidden', 'true');
+        // Remove from tab order when hidden
+        this.floatEl.querySelectorAll('button, a').forEach(el => el.setAttribute('tabindex', '-1'));
+      }
+      this.ticking = false;
+    });
+  },
+};
+
+/* ============================================================
+   6. HERO WHEEL (decorative, auto-rotating)
+============================================================ */
 const HeroWheel = {
-  canvas: null,
-  ctx:    null,
-  angle:  0,
-  raf:    null,
-  items: ['🍕', '🎬', '🌍', '🎮', '💪', '🎭', '📚', '🏆'],
+  canvas: null, ctx: null, angle: 0, raf: null,
+  labels: ['Food','Movies','Games','Study','Prize','Workout','Truth','Country'],
 
   init() {
     this.canvas = document.getElementById('hero-wheel');
@@ -376,13 +364,13 @@ const HeroWheel = {
   },
 
   draw() {
-    const ctx   = this.ctx;
-    const size  = this.canvas.width;
-    const cx    = size / 2;
-    const cy    = size / 2;
-    const r     = cx - 4;
-    const n     = this.items.length;
-    const arc   = (Math.PI * 2) / n;
+    const ctx  = this.ctx;
+    const size = this.canvas.width;
+    const cx   = size / 2;
+    const cy   = size / 2;
+    const r    = cx - 4;
+    const n    = this.labels.length;
+    const arc  = (Math.PI * 2) / n;
 
     ctx.clearRect(0, 0, size, size);
 
@@ -390,43 +378,43 @@ const HeroWheel = {
       const start = this.angle + i * arc;
       const end   = start + arc;
 
-      // Segment
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, r, start, end);
       ctx.closePath();
       ctx.fillStyle = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
       ctx.fill();
-
-      // Separator
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, r, start, start + 0.01);
-      ctx.strokeStyle = '#fff';
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Emoji label
+      // Text label
+      const mid = start + arc / 2;
+      const tx  = cx + Math.cos(mid) * r * 0.62;
+      const ty  = cy + Math.sin(mid) * r * 0.62;
       ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(start + arc / 2);
-      ctx.font = `${size < 200 ? 16 : 22}px serif`;
+      ctx.translate(tx, ty);
+      ctx.rotate(mid + Math.PI / 2);
+      ctx.font = `bold ${size < 200 ? 11 : 13}px system-ui`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(this.items[i], r * 0.65, 0);
+      ctx.fillStyle = '#fff';
+      ctx.shadowColor = 'rgba(0,0,0,0.3)';
+      ctx.shadowBlur = 3;
+      ctx.fillText(this.labels[i], 0, 0);
       ctx.restore();
     }
 
-    // Border ring
+    // Outer ring
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.strokeStyle = PALETTE.forest;
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 5;
     ctx.stroke();
 
-    // Centre circle
+    // Centre
     ctx.beginPath();
-    ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 22, 0, Math.PI * 2);
     ctx.fillStyle = PALETTE.forest;
     ctx.fill();
     ctx.strokeStyle = '#fff';
@@ -435,16 +423,15 @@ const HeroWheel = {
   },
 
   animate() {
-    this.angle += 0.003;
+    this.angle += 0.004;
     this.draw();
     this.raf = requestAnimationFrame(() => this.animate());
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   6. HOME VIEW
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   7. HOME VIEW
+============================================================ */
 const HomeView = {
   render() {
     this.renderTemplateCards();
@@ -453,6 +440,7 @@ const HomeView = {
 
   renderTemplateCards() {
     const grid = document.getElementById('template-grid');
+    if (!grid) return;
     grid.innerHTML = '';
 
     TEMPLATES.forEach(tpl => {
@@ -460,17 +448,24 @@ const HomeView = {
       card.className = 'template-card';
       card.setAttribute('role', 'listitem');
       card.tabIndex = 0;
-      card.setAttribute('aria-label', `${tpl.name} – ${tpl.desc}`);
-      card.innerHTML = `
-        <div class="card-icon" aria-hidden="true">${tpl.icon}</div>
-        <div class="card-title">${tpl.name}</div>
-        <div class="card-desc">${tpl.desc}</div>
-        <button class="card-open-btn" aria-label="Open ${tpl.name}">Open</button>
-      `;
+      card.setAttribute('aria-label', tpl.name + '. ' + tpl.desc);
+
+      card.innerHTML =
+        '<div class="card-icon-wrap" aria-hidden="true">' + tpl.svgIcon + '</div>' +
+        '<div class="card-category">' + tpl.category + '</div>' +
+        '<div class="card-title">' + tpl.name + '</div>' +
+        '<div class="card-desc">' + tpl.desc + '</div>' +
+        '<button class="card-open-btn" aria-label="Open ' + tpl.name + '">Open</button>';
 
       const openBtn = card.querySelector('.card-open-btn');
+
+      // FIXED: both the button and card open the template correctly
       openBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        this.openTemplate(tpl);
+      });
+      card.addEventListener('click', (e) => {
+        if (e.target === openBtn) return;
         this.openTemplate(tpl);
       });
       card.addEventListener('keydown', (e) => {
@@ -487,6 +482,7 @@ const HomeView = {
   renderRecents() {
     const section = document.getElementById('recent-section');
     const grid    = document.getElementById('recent-grid');
+    if (!section || !grid) return;
 
     const recentWheels = state.recents
       .map(id => state.wheels.find(w => w.id === id))
@@ -501,35 +497,29 @@ const HomeView = {
 
     section.style.display = '';
     grid.innerHTML = '';
-
     recentWheels.forEach(wheel => {
       const chip = document.createElement('button');
       chip.className = 'recent-chip';
       chip.textContent = wheel.name;
-      chip.setAttribute('aria-label', `Re-open ${wheel.name}`);
+      chip.setAttribute('aria-label', 'Re-open ' + wheel.name);
       chip.addEventListener('click', () => BuilderView.loadWheel(wheel.id));
       grid.appendChild(chip);
     });
   },
 
   openTemplate(tpl) {
-    // If custom, go straight to empty builder
     if (tpl.id === 'tpl-custom') {
       BuilderView.resetBuilder();
-      Router.go('builder');
-      return;
+    } else {
+      BuilderView.loadFromTemplate(tpl);
     }
-
-    // Otherwise load template into builder
-    BuilderView.loadFromTemplate(tpl);
     Router.go('builder');
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   7. MY WHEELS VIEW
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   8. MY WHEELS VIEW
+============================================================ */
 const MyWheelsView = {
   render() {
     this.applyFilter();
@@ -537,29 +527,20 @@ const MyWheelsView = {
 
   applyFilter() {
     let wheels = [...state.wheels];
-
-    // Filter by type
-    if (state.wheelFilter === 'favorites') {
-      wheels = wheels.filter(w => w.favorite);
-    } else if (state.wheelFilter === 'custom') {
-      wheels = wheels.filter(w => !w.isTemplate);
-    } else if (state.wheelFilter === 'template') {
-      wheels = wheels.filter(w => w.isTemplate);
-    }
-
-    // Filter by search
+    if (state.wheelFilter === 'favorites') wheels = wheels.filter(w => w.favorite);
+    else if (state.wheelFilter === 'custom')   wheels = wheels.filter(w => !w.isTemplate);
+    else if (state.wheelFilter === 'template') wheels = wheels.filter(w =>  w.isTemplate);
     if (state.wheelSearch) {
       const q = state.wheelSearch.toLowerCase();
       wheels = wheels.filter(w => w.name.toLowerCase().includes(q));
     }
-
     this.renderCards(wheels);
   },
 
   renderCards(wheels) {
     const grid  = document.getElementById('wheels-grid');
     const empty = document.getElementById('wheels-empty');
-
+    if (!grid || !empty) return;
     grid.innerHTML = '';
 
     if (wheels.length === 0) {
@@ -568,10 +549,7 @@ const MyWheelsView = {
     }
     empty.hidden = true;
 
-    wheels.forEach(wheel => {
-      const card = this.createCard(wheel);
-      grid.appendChild(card);
-    });
+    wheels.forEach(wheel => grid.appendChild(this.createCard(wheel)));
   },
 
   createCard(wheel) {
@@ -579,80 +557,64 @@ const MyWheelsView = {
     card.className = 'wheel-card';
     card.setAttribute('role', 'listitem');
     card.dataset.wheelId = wheel.id;
+    card.tabIndex = 0;
 
     const itemCount = wheel.items ? wheel.items.length : 0;
-    const favIcon   = wheel.favorite ? '⭐' : '☆';
-    const dateStr   = wheel.updatedAt
-      ? new Date(wheel.updatedAt).toLocaleDateString()
-      : '';
+    const dateStr   = wheel.updatedAt ? new Date(wheel.updatedAt).toLocaleDateString() : '';
+    const favSvg    = wheel.favorite
+      ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3.5 3.5.3-2.5 2.5.7 3.7L7 9 3.8 11l.7-3.7L2 4.8l3.5-.3L7 1z" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"/></svg>'
+      : '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3.5 3.5.3-2.5 2.5.7 3.7L7 9 3.8 11l.7-3.7L2 4.8l3.5-.3L7 1z" stroke="#4A6852" stroke-width="1.3" stroke-linejoin="round"/></svg>';
 
-    card.innerHTML = `
-      <div class="wheel-card-preview">
-        <canvas width="120" height="120" aria-hidden="true"></canvas>
-        <button class="wheel-card-more" data-id="${wheel.id}" aria-label="More options for ${wheel.name}" title="More options">⋯</button>
-        <button class="wheel-card-fav" data-id="${wheel.id}" aria-label="${wheel.favorite ? 'Remove from favorites' : 'Add to favorites'}" title="Favourite">${favIcon}</button>
-      </div>
-      <div class="wheel-card-body">
-        <div class="wheel-card-name" title="${wheel.name}">${wheel.name}</div>
-        <div class="wheel-card-meta">
-          <span>${itemCount} item${itemCount !== 1 ? 's' : ''}</span>
-          <span>${dateStr}</span>
-        </div>
-      </div>
-      <div class="wheel-card-actions">
-        <button class="wca-btn primary" data-id="${wheel.id}" data-action="open">Spin</button>
-        <button class="wca-btn" data-id="${wheel.id}" data-action="edit">Edit</button>
-      </div>
-    `;
+    card.innerHTML =
+      '<div class="wheel-card-preview">' +
+        '<canvas width="120" height="120" aria-hidden="true"></canvas>' +
+        '<button class="wheel-card-more" data-id="' + wheel.id + '" aria-label="More options" title="More options">...</button>' +
+        '<button class="wheel-card-fav" data-id="' + wheel.id + '" aria-label="' + (wheel.favorite ? 'Remove from favourites' : 'Add to favourites') + '">' + favSvg + '</button>' +
+      '</div>' +
+      '<div class="wheel-card-body">' +
+        '<div class="wheel-card-name" title="' + wheel.name + '">' + wheel.name + '</div>' +
+        '<div class="wheel-card-meta"><span>' + itemCount + ' item' + (itemCount !== 1 ? 's' : '') + '</span><span>' + dateStr + '</span></div>' +
+      '</div>' +
+      '<div class="wheel-card-actions">' +
+        '<button class="wca-btn primary" data-id="' + wheel.id + '" data-action="open">Spin</button>' +
+        '<button class="wca-btn" data-id="' + wheel.id + '" data-action="edit">Edit</button>' +
+      '</div>';
 
-    // Draw mini preview wheel
-    const canvas = card.querySelector('canvas');
-    WheelRenderer.drawMini(canvas, wheel.items || [], 60);
+    WheelRenderer.drawMini(card.querySelector('canvas'), wheel.items || [], 56);
 
-    // Favourite button
     card.querySelector('.wheel-card-fav').addEventListener('click', (e) => {
       e.stopPropagation();
       this.toggleFavorite(wheel.id);
     });
-
-    // More options button
     card.querySelector('.wheel-card-more').addEventListener('click', (e) => {
       e.stopPropagation();
       ContextMenu.open(e, wheel.id);
     });
-
-    // Action buttons
     card.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const action = btn.dataset.action;
-        if (action === 'open') BuilderView.loadWheel(wheel.id);
-        if (action === 'edit') BuilderView.loadWheel(wheel.id, true);
+        if (btn.dataset.action === 'open') BuilderView.loadWheel(wheel.id);
+        if (btn.dataset.action === 'edit') BuilderView.loadWheel(wheel.id, true);
       });
     });
-
-    // Card click → open
     card.addEventListener('click', () => BuilderView.loadWheel(wheel.id));
-    card.tabIndex = 0;
-    card.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') BuilderView.loadWheel(wheel.id);
-    });
+    card.addEventListener('keydown', (e) => { if (e.key === 'Enter') BuilderView.loadWheel(wheel.id); });
 
     return card;
   },
 
   toggleFavorite(id) {
-    const wheel = state.wheels.find(w => w.id === id);
-    if (!wheel) return;
-    wheel.favorite = !wheel.favorite;
+    const w = state.wheels.find(w => w.id === id);
+    if (!w) return;
+    w.favorite = !w.favorite;
     Storage.saveWheels();
     this.render();
-    Toast.show(wheel.favorite ? '⭐ Added to favourites' : 'Removed from favourites');
+    Toast.show(w.favorite ? 'Added to favourites' : 'Removed from favourites');
   },
 
   deleteWheel(id) {
-    state.wheels = state.wheels.filter(w => w.id !== id);
-    state.recents = state.recents.filter(rid => rid !== id);
+    state.wheels  = state.wheels.filter(w => w.id !== id);
+    state.recents = state.recents.filter(r => r !== id);
     Storage.saveWheels();
     Storage.saveRecents();
     this.render();
@@ -660,11 +622,11 @@ const MyWheelsView = {
   },
 
   duplicateWheel(id) {
-    const wheel = state.wheels.find(w => w.id === id);
-    if (!wheel) return;
-    const copy = deepClone(wheel);
+    const w = state.wheels.find(w => w.id === id);
+    if (!w) return;
+    const copy = deepClone(w);
     copy.id        = generateId();
-    copy.name      = `${wheel.name} (copy)`;
+    copy.name      = w.name + ' (copy)';
     copy.favorite  = false;
     copy.createdAt = Date.now();
     copy.updatedAt = Date.now();
@@ -675,20 +637,19 @@ const MyWheelsView = {
   },
 
   renameWheel(id, newName) {
-    const wheel = state.wheels.find(w => w.id === id);
-    if (!wheel || !newName.trim()) return;
-    wheel.name      = newName.trim();
-    wheel.updatedAt = Date.now();
+    const w = state.wheels.find(w => w.id === id);
+    if (!w || !newName.trim()) return;
+    w.name      = newName.trim();
+    w.updatedAt = Date.now();
     Storage.saveWheels();
     this.render();
     Toast.show('Wheel renamed');
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   8. BUILDER VIEW
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   9. BUILDER VIEW
+============================================================ */
 const BuilderView = {
   render() {
     this.syncFormFromState();
@@ -697,119 +658,100 @@ const BuilderView = {
     WheelRenderer.draw(getBuilderCanvas(), state.builder);
   },
 
-  /** Reset builder to a blank wheel */
   resetBuilder() {
     state.builder = {
-      id:   null,
-      name: 'My Wheel',
-      desc: '',
+      id: null, name: 'My Wheel', desc: '',
       items: [],
       settings: {
-        size:          420,
-        fontFamily:    'system-ui',
-        fontSize:      14,
-        borderWidth:   2,
-        pointerStyle:  'arrow',
-        centerStyle:   'circle',
-        spinDuration:  5000,
-        spinDirection: 'cw',
-        easingType:    'ease-out',
-        soundOn:       true,
-        confettiOn:    true,
-        bgType:        'solid',
-        bgColor:       '#F5F5E8',
-        bgGradFrom:    '#D4E8A0',
-        bgGradTo:      '#5BB88A',
+        size:420, fontFamily:'system-ui', fontSize:14, borderWidth:2,
+        pointerStyle:'arrow', centerStyle:'circle', spinDuration:5000,
+        spinDirection:'cw', easingType:'ease-out', soundOn:true,
+        confettiOn:true, bgType:'solid', bgColor:'#F5F5E8',
+        bgGradFrom:'#D4E8A0', bgGradTo:'#5BB88A',
       },
     };
-    state.editingWheelId = null;
-    document.getElementById('builder-title').textContent = 'Build a Wheel';
+    state.spin.currentAngle = 0;
+    state.spin.isSpinning   = false;
+    const t = document.getElementById('builder-title');
+    if (t) t.textContent = 'Build a Wheel';
   },
 
-  /** Load a template into the builder */
   loadFromTemplate(tpl) {
     this.resetBuilder();
     state.builder.name  = tpl.name;
+    state.builder.desc  = tpl.desc || '';
     state.builder.items = tpl.items.map((item, i) => ({
-      ...item,
-      id: generateId(),
-      color: item.color || SEGMENT_COLORS[i % SEGMENT_COLORS.length],
+      id:     generateId(),
+      text:   item.text,
+      color:  item.color || SEGMENT_COLORS[i % SEGMENT_COLORS.length],
+      weight: item.weight || 1,
     }));
-    document.getElementById('builder-title').textContent = tpl.name;
+    const t = document.getElementById('builder-title');
+    if (t) t.textContent = tpl.name;
   },
 
-  /** Load an existing saved wheel into the builder */
   loadWheel(id, editMode = false) {
     const wheel = state.wheels.find(w => w.id === id);
     if (!wheel) return;
-
-    state.builder     = deepClone(wheel);
-    state.builder.id  = id;
-    state.editingWheelId = id;
-
-    // Track recent
+    state.builder = deepClone(wheel);
+    state.builder.id = id;
+    state.spin.currentAngle = 0;
     addToRecents(id);
-
-    document.getElementById('builder-title').textContent = wheel.name;
+    const t = document.getElementById('builder-title');
+    if (t) t.textContent = wheel.name;
     Router.go('builder');
   },
 
-  /** Sync all form inputs from state.builder */
   syncFormFromState() {
     const b = state.builder;
     const s = b.settings;
-
-    setVal('wheel-name',     b.name);
-    setVal('wheel-desc',     b.desc);
-    setVal('wheel-size',     s.size);
-    setVal('font-family',    s.fontFamily);
-    setVal('font-size',      s.fontSize);
-    setVal('border-width',   s.borderWidth);
-    setVal('pointer-style',  s.pointerStyle);
-    setVal('center-style',   s.centerStyle);
-    setVal('spin-duration',  s.spinDuration);
-    setVal('spin-direction', s.spinDirection);
-    setVal('easing-type',    s.easingType);
+    setVal('wheel-name',    b.name);
+    setVal('wheel-desc',    b.desc);
+    setVal('wheel-size',    s.size);
+    setVal('font-family',   s.fontFamily);
+    setVal('font-size',     s.fontSize);
+    setVal('border-width',  s.borderWidth);
+    setVal('pointer-style', s.pointerStyle);
+    setVal('center-style',  s.centerStyle);
+    setVal('spin-duration', s.spinDuration);
+    setVal('spin-direction',s.spinDirection);
+    setVal('easing-type',   s.easingType);
     setChecked('sound-toggle',    s.soundOn);
     setChecked('confetti-toggle', s.confettiOn);
     setVal('bg-color',     s.bgColor);
     setVal('bg-grad-from', s.bgGradFrom);
     setVal('bg-grad-to',   s.bgGradTo);
-
-    // Background type radio
-    document.querySelectorAll('input[name="bg-type"]').forEach(r => {
-      r.checked = r.value === s.bgType;
-    });
+    document.querySelectorAll('input[name="bg-type"]').forEach(r => { r.checked = r.value === s.bgType; });
     this.toggleBgOpts(s.bgType);
     this.updatePointerSvg(s.pointerStyle);
     this.resizeCanvas(s.size);
   },
 
-  /** Read all form inputs and update state.builder.settings */
   syncStateFromForm() {
     const s = state.builder.settings;
-    state.builder.name = getVal('wheel-name') || 'My Wheel';
-    state.builder.desc = getVal('wheel-desc');
-    s.size          = parseInt(getVal('wheel-size'));
-    s.fontFamily    = getVal('font-family');
-    s.fontSize      = parseInt(getVal('font-size'));
-    s.borderWidth   = parseInt(getVal('border-width'));
-    s.pointerStyle  = getVal('pointer-style');
-    s.centerStyle   = getVal('center-style');
-    s.spinDuration  = parseInt(getVal('spin-duration'));
-    s.spinDirection = getVal('spin-direction');
-    s.easingType    = getVal('easing-type');
-    s.soundOn       = document.getElementById('sound-toggle').checked;
-    s.confettiOn    = document.getElementById('confetti-toggle').checked;
-    s.bgType        = document.querySelector('input[name="bg-type"]:checked')?.value || 'solid';
-    s.bgColor       = getVal('bg-color');
-    s.bgGradFrom    = getVal('bg-grad-from');
-    s.bgGradTo      = getVal('bg-grad-to');
+    state.builder.name  = getVal('wheel-name') || 'My Wheel';
+    state.builder.desc  = getVal('wheel-desc');
+    s.size              = parseInt(getVal('wheel-size'))      || 420;
+    s.fontFamily        = getVal('font-family');
+    s.fontSize          = parseInt(getVal('font-size'))       || 14;
+    s.borderWidth       = parseInt(getVal('border-width'))    || 0;
+    s.pointerStyle      = getVal('pointer-style');
+    s.centerStyle       = getVal('center-style');
+    s.spinDuration      = parseInt(getVal('spin-duration'))   || 5000;
+    s.spinDirection     = getVal('spin-direction');
+    s.easingType        = getVal('easing-type');
+    s.soundOn           = document.getElementById('sound-toggle').checked;
+    s.confettiOn        = document.getElementById('confetti-toggle').checked;
+    const bgRadio       = document.querySelector('input[name="bg-type"]:checked');
+    s.bgType            = bgRadio ? bgRadio.value : 'solid';
+    s.bgColor           = getVal('bg-color');
+    s.bgGradFrom        = getVal('bg-grad-from');
+    s.bgGradTo          = getVal('bg-grad-to');
   },
 
-  /** Re-render the items list in the panel */
   renderItemsList() {
     const list = document.getElementById('items-list');
+    if (!list) return;
     list.innerHTML = '';
 
     state.builder.items.forEach((item, i) => {
@@ -819,22 +761,22 @@ const BuilderView = {
       row.draggable = true;
       row.dataset.index = i;
 
-      const label = item.emoji ? `${item.emoji} ${item.text}` : item.text;
       const showWeight = item.weight && item.weight > 1;
+      const editSvg = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 9L7 3l2 2-6 6H1V9z" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>';
+      const dupSvg  = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="4" width="6" height="7" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M4 4V2a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H9" stroke="currentColor" stroke-width="1.3"/></svg>';
+      const delSvg  = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M5 3V2h2v1M4 4l.5 7M8 4l-.5 7M2 3l.8 8h6.4L10 3H2z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
 
-      row.innerHTML = `
-        <span class="item-drag-handle" aria-hidden="true" title="Drag to reorder">⠿</span>
-        <span class="item-color-dot" style="background:${item.color}"></span>
-        <span class="item-text" title="${label}">${label}</span>
-        ${showWeight ? `<span class="item-weight-badge" title="Weight">×${item.weight}</span>` : ''}
-        <div class="item-actions">
-          <button class="item-action-btn" data-action="edit" data-index="${i}" aria-label="Edit ${item.text}" title="Edit">✏️</button>
-          <button class="item-action-btn" data-action="dup"  data-index="${i}" aria-label="Duplicate ${item.text}" title="Duplicate">📋</button>
-          <button class="item-action-btn danger" data-action="del" data-index="${i}" aria-label="Delete ${item.text}" title="Delete">✕</button>
-        </div>
-      `;
+      row.innerHTML =
+        '<span class="item-drag-handle" aria-hidden="true" title="Drag to reorder">:: </span>' +
+        '<span class="item-color-dot" style="background:' + item.color + '"></span>' +
+        '<span class="item-text" title="' + item.text + '">' + item.text + '</span>' +
+        (showWeight ? '<span class="item-weight-badge" title="Weight">x' + item.weight + '</span>' : '') +
+        '<div class="item-actions">' +
+          '<button class="item-action-btn" data-action="edit" data-index="' + i + '" aria-label="Edit ' + item.text + '" title="Edit">' + editSvg + '</button>' +
+          '<button class="item-action-btn" data-action="dup"  data-index="' + i + '" aria-label="Duplicate" title="Duplicate">' + dupSvg + '</button>' +
+          '<button class="item-action-btn danger" data-action="del" data-index="' + i + '" aria-label="Delete" title="Delete">' + delSvg + '</button>' +
+        '</div>';
 
-      // Action buttons
       row.querySelectorAll('[data-action]').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -845,21 +787,20 @@ const BuilderView = {
         });
       });
 
-      // Drag & drop
       DragDrop.attachRow(row);
-
       list.appendChild(row);
     });
 
-    // Update count badges
     const count = state.builder.items.length;
-    document.getElementById('item-count').textContent     = `${count} item${count !== 1 ? 's' : ''}`;
-    document.getElementById('preview-item-count').textContent = `${count} item${count !== 1 ? 's' : ''}`;
+    const label = count + ' item' + (count !== 1 ? 's' : '');
+    const ic  = document.getElementById('item-count');
+    const pic = document.getElementById('preview-item-count');
+    if (ic)  ic.textContent  = label;
+    if (pic) pic.textContent = label;
   },
 
   duplicateItem(index) {
-    const item = state.builder.items[index];
-    const copy = { ...item, id: generateId() };
+    const copy = { ...state.builder.items[index], id: generateId() };
     state.builder.items.splice(index + 1, 0, copy);
     this.renderItemsList();
     this.refreshWheel();
@@ -872,53 +813,45 @@ const BuilderView = {
   },
 
   addItem() {
-    const nextColor = SEGMENT_COLORS[state.builder.items.length % SEGMENT_COLORS.length];
-    const newItem = {
-      id:     generateId(),
-      text:   `Item ${state.builder.items.length + 1}`,
-      emoji:  '',
-      color:  nextColor,
-      weight: 1,
-    };
+    const color = SEGMENT_COLORS[state.builder.items.length % SEGMENT_COLORS.length];
+    const newItem = { id: generateId(), text: 'Item ' + (state.builder.items.length + 1), color, weight: 1 };
     state.builder.items.push(newItem);
     this.renderItemsList();
     this.refreshWheel();
-    // Scroll items list to bottom
     const list = document.getElementById('items-list');
-    list.scrollTop = list.scrollHeight;
-    // Open editor for new item
+    if (list) list.scrollTop = list.scrollHeight;
     ItemEditor.open(state.builder.items.length - 1);
   },
 
-  /** Redraw the preview wheel and update stats */
   refreshWheel() {
     this.syncStateFromForm();
-    WheelRenderer.draw(getBuilderCanvas(), state.builder);
     this.updatePointerSvg(state.builder.settings.pointerStyle);
     this.resizeCanvas(state.builder.settings.size);
+    WheelRenderer.draw(getBuilderCanvas(), state.builder);
     this.updatePreviewStats();
   },
 
   updatePreviewStats() {
-    const s = state.builder.settings;
-    const dur = s.spinDuration / 1000;
+    const s   = state.builder.settings;
+    const dur = (s.spinDuration / 1000) + 's';
     const dir = s.spinDirection === 'cw' ? 'Clockwise' : 'Counter-CW';
-    document.getElementById('preview-spin-info').textContent = `${dur}s · ${dir}`;
+    const el  = document.getElementById('preview-spin-info');
+    if (el) el.textContent = dur + ' . ' + dir;
   },
 
   toggleBgOpts(type) {
-    document.getElementById('bg-solid-opts').hidden    = type !== 'solid';
-    document.getElementById('bg-gradient-opts').hidden = type !== 'gradient';
+    const sol = document.getElementById('bg-solid-opts');
+    const grd = document.getElementById('bg-gradient-opts');
+    if (sol) sol.hidden = type !== 'solid';
+    if (grd) grd.hidden = type !== 'gradient';
   },
 
   resizeCanvas(size) {
-    const canvas = getBuilderCanvas();
-    const stage  = document.getElementById('wheel-stage');
-    const maxSize = Math.min(size, window.innerWidth < 640 ? 300 : 480);
+    const canvas  = getBuilderCanvas();
+    if (!canvas) return;
+    const maxSize = Math.min(size, window.innerWidth < 640 ? 280 : 480);
     canvas.width  = maxSize;
     canvas.height = maxSize;
-    canvas.style.width  = maxSize + 'px';
-    canvas.style.height = maxSize + 'px';
     WheelRenderer.draw(canvas, state.builder);
   },
 
@@ -937,41 +870,23 @@ const BuilderView = {
     }
   },
 
-  /** Save current builder state to wheels array */
   saveWheel() {
     this.syncStateFromForm();
     const b = state.builder;
-
-    if (!b.name.trim()) {
-      Toast.show('Please give your wheel a name.');
-      document.getElementById('wheel-name').focus();
-      return;
-    }
-    if (b.items.length < 2) {
-      Toast.show('Add at least 2 items to save.');
-      return;
-    }
+    if (!b.name.trim()) { Toast.show('Please name your wheel.'); return; }
+    if (b.items.length < 2) { Toast.show('Add at least 2 items first.'); return; }
 
     const now = Date.now();
-    const existingIdx = state.wheels.findIndex(w => w.id === b.id);
+    const idx = state.wheels.findIndex(w => w.id === b.id);
 
-    if (existingIdx >= 0) {
-      // Update existing
-      state.wheels[existingIdx] = { ...deepClone(b), updatedAt: now };
-      Toast.show('✅ Wheel updated!');
+    if (idx >= 0) {
+      state.wheels[idx] = { ...deepClone(b), updatedAt: now };
+      Toast.show('Wheel updated!');
     } else {
-      // New wheel
-      const newWheel = {
-        ...deepClone(b),
-        id:         b.id || generateId(),
-        isTemplate: false,
-        favorite:   false,
-        createdAt:  now,
-        updatedAt:  now,
-      };
-      state.builder.id = newWheel.id;
-      state.wheels.unshift(newWheel);
-      Toast.show('✅ Wheel saved!');
+      const nw = { ...deepClone(b), id: b.id || generateId(), isTemplate:false, favorite:false, createdAt:now, updatedAt:now };
+      state.builder.id = nw.id;
+      state.wheels.unshift(nw);
+      Toast.show('Wheel saved!');
     }
 
     Storage.saveWheels();
@@ -979,131 +894,108 @@ const BuilderView = {
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   9. WHEEL CANVAS RENDERER
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   10. WHEEL RENDERER
+============================================================ */
 const WheelRenderer = {
-  /**
-   * Draw the full interactive wheel onto a canvas.
-   * @param {HTMLCanvasElement} canvas
-   * @param {object} builderState - { items, settings }
-   * @param {number} [overrideAngle] - optional rotation override (radians)
-   */
   draw(canvas, builderState, overrideAngle) {
     if (!canvas) return;
-    const ctx  = canvas.getContext('2d');
-    const size = canvas.width;
-    const cx   = size / 2;
-    const cy   = size / 2;
-    const r    = cx - 6;
-    const items     = builderState.items || [];
-    const settings  = builderState.settings || {};
-    const angle     = overrideAngle !== undefined ? overrideAngle : state.spin.currentAngle;
+    const ctx     = canvas.getContext('2d');
+    const size    = canvas.width;
+    const cx      = size / 2;
+    const cy      = size / 2;
+    const r       = cx - 6;
+    const items   = builderState.items    || [];
+    const s       = builderState.settings || {};
+    const angle   = overrideAngle !== undefined ? overrideAngle : state.spin.currentAngle;
 
     ctx.clearRect(0, 0, size, size);
 
-    // Background
-    if (settings.bgType === 'gradient') {
-      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-      grad.addColorStop(0, settings.bgGradFrom || PALETTE.mint);
-      grad.addColorStop(1, settings.bgGradTo   || PALETTE.teal);
-      ctx.fillStyle = grad;
-    } else {
-      ctx.fillStyle = settings.bgColor || PALETTE.bg;
-    }
+    // Background fill (circle clip)
+    ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.clip();
+
+    if (s.bgType === 'gradient') {
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      grad.addColorStop(0, s.bgGradFrom || PALETTE.mint);
+      grad.addColorStop(1, s.bgGradTo   || PALETTE.teal);
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = s.bgColor || PALETTE.bg;
+    }
+    ctx.fillRect(0, 0, size, size);
+    ctx.restore();
 
     if (items.length === 0) {
-      // Empty state placeholder
       ctx.fillStyle = PALETTE.mint;
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = PALETTE.text;
-      ctx.font = `${Math.floor(size * 0.05)}px ${settings.fontFamily || 'system-ui'}`;
+      ctx.font = Math.floor(size * 0.048) + 'px system-ui';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('Add items to preview', cx, cy);
       return;
     }
 
-    // Calculate total weight
-    const totalWeight = items.reduce((sum, item) => sum + (item.weight || 1), 0);
-    const arcStart    = angle - Math.PI / 2; // start from top
-
-    let currentAngle = arcStart;
+    const totalWeight = items.reduce((sum, it) => sum + (it.weight || 1), 0);
+    const arcStart    = angle - Math.PI / 2;
+    let currentAngle  = arcStart;
 
     items.forEach((item, i) => {
-      const itemWeight = item.weight || 1;
-      const arc = (itemWeight / totalWeight) * Math.PI * 2;
-      const endAngle = currentAngle + arc;
+      const itemW = item.weight || 1;
+      const arc   = (itemW / totalWeight) * Math.PI * 2;
+      const end   = currentAngle + arc;
 
-      // Segment fill
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, r, currentAngle, endAngle);
+      ctx.arc(cx, cy, r, currentAngle, end);
       ctx.closePath();
       ctx.fillStyle = item.color || SEGMENT_COLORS[i % SEGMENT_COLORS.length];
       ctx.fill();
 
-      // Segment border
-      if (settings.borderWidth > 0) {
-        ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-        ctx.lineWidth   = settings.borderWidth;
+      if (s.borderWidth > 0) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+        ctx.lineWidth   = s.borderWidth;
         ctx.stroke();
       }
 
-      // Label text
-      const midAngle  = currentAngle + arc / 2;
-      const labelR    = r * 0.62;
-      const tx        = cx + Math.cos(midAngle) * labelR;
-      const ty        = cy + Math.sin(midAngle) * labelR;
-      const fontSize  = settings.fontSize || 14;
-      const fontFace  = settings.fontFamily || 'system-ui';
+      // Label
+      const midAngle = currentAngle + arc / 2;
+      const labelR   = r * 0.6;
+      const tx       = cx + Math.cos(midAngle) * labelR;
+      const ty       = cy + Math.sin(midAngle) * labelR;
+      const fontSize = s.fontSize || 14;
+      const fontFace = s.fontFamily || 'system-ui';
 
       ctx.save();
       ctx.translate(tx, ty);
       ctx.rotate(midAngle + Math.PI / 2);
-
-      // Emoji line (if present)
-      if (item.emoji) {
-        ctx.font = `${fontSize + 2}px serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        ctx.fillStyle = '#fff';
-        ctx.fillText(item.emoji, 0, 0);
-        ctx.font = `bold ${fontSize}px ${fontFace}`;
-        ctx.textBaseline = 'top';
-        ctx.shadowColor = 'rgba(0,0,0,0.35)';
-        ctx.shadowBlur  = 3;
-        ctx.fillText(truncate(item.text, 12), 0, 2);
-      } else {
-        ctx.font = `bold ${fontSize}px ${fontFace}`;
-        ctx.textAlign    = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle    = '#fff';
-        ctx.shadowColor  = 'rgba(0,0,0,0.35)';
-        ctx.shadowBlur   = 3;
-        ctx.fillText(truncate(item.text, 14), 0, 0);
-      }
+      ctx.font = 'bold ' + fontSize + 'px ' + fontFace;
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle    = '#fff';
+      ctx.shadowColor  = 'rgba(0,0,0,0.35)';
+      ctx.shadowBlur   = 3;
+      ctx.fillText(truncate(item.text, 14), 0, 0);
       ctx.restore();
 
-      currentAngle = endAngle;
+      currentAngle = end;
     });
 
-    // Outer ring / border
+    // Outer border
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.strokeStyle = PALETTE.forest;
-    ctx.lineWidth   = Math.max(settings.borderWidth || 2, 3);
+    ctx.lineWidth   = Math.max(s.borderWidth || 2, 3);
     ctx.stroke();
 
-    // Centre decoration
-    if (settings.centerStyle !== 'none') {
-      const innerR = settings.centerStyle === 'dot' ? 10 : 32;
+    // Centre
+    if (s.centerStyle !== 'none') {
+      const innerR = s.centerStyle === 'dot' ? 10 : 30;
       ctx.beginPath();
       ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
       ctx.fillStyle   = PALETTE.forest;
@@ -1114,22 +1006,15 @@ const WheelRenderer = {
     }
   },
 
-  /**
-   * Draw a tiny thumbnail wheel onto a card canvas.
-   * @param {HTMLCanvasElement} canvas
-   * @param {Array} items
-   * @param {number} r  - radius
-   */
   drawMini(canvas, items, r) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const cx  = canvas.width  / 2;
     const cy  = canvas.height / 2;
-    const n   = items.length || 1;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (items.length === 0) {
+    if (!items || items.length === 0) {
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fillStyle = PALETTE.mint;
@@ -1137,11 +1022,11 @@ const WheelRenderer = {
       return;
     }
 
-    const totalWeight = items.reduce((s, it) => s + (it.weight || 1), 0);
+    const totalW = items.reduce((s, it) => s + (it.weight || 1), 0);
     let cur = -Math.PI / 2;
 
     items.forEach((item, i) => {
-      const arc = ((item.weight || 1) / totalWeight) * Math.PI * 2;
+      const arc = ((item.weight || 1) / totalW) * Math.PI * 2;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, r, cur, cur + arc);
@@ -1161,104 +1046,83 @@ const WheelRenderer = {
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 9, 0, Math.PI * 2);
     ctx.fillStyle = PALETTE.forest;
     ctx.fill();
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   10. SPIN ENGINE
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   11. SPIN ENGINE
+============================================================ */
 const SpinEngine = {
-  /**
-   * Kick off a spin animation.
-   */
   spin() {
     if (state.spin.isSpinning) return;
-
     const items = state.builder.items;
-    if (items.length < 2) {
-      Toast.show('Add at least 2 items to spin!');
-      return;
-    }
+    if (items.length < 2) { Toast.show('Add at least 2 items to spin!'); return; }
 
     const s         = state.builder.settings;
     const duration  = s.spinDuration || 5000;
     const direction = s.spinDirection === 'ccw' ? -1 : 1;
-    const easing    = s.easingType || 'ease-out';
+    const winnerIdx = this.pickWeightedRandom(items);
+    const winner    = items[winnerIdx];
 
-    // Weighted random selection
-    const winnerIndex = this.pickWeightedRandom(items);
-    const winnerItem  = items[winnerIndex];
-
-    // Calculate how far each item spans
     const totalWeight = items.reduce((sum, it) => sum + (it.weight || 1), 0);
-    let winnerMidAngle = 0;
     let acc = 0;
-    for (let i = 0; i <= winnerIndex; i++) {
-      const w    = items[i].weight || 1;
-      const frac = w / totalWeight;
-      if (i < winnerIndex) acc += frac;
-      else winnerMidAngle = acc + frac / 2;
+    let winnerMidFrac = 0;
+    for (let i = 0; i <= winnerIdx; i++) {
+      const frac = (items[i].weight || 1) / totalWeight;
+      if (i < winnerIdx) acc += frac;
+      else winnerMidFrac = acc + frac / 2;
     }
 
-    // Target angle: winner segment mid should be at top (12 o'clock = -PI/2)
-    // currentAngle is the rotation already applied
-    // We need to bring winnerMidAngle * 2PI to 0 position (top)
-    const winnerRad   = winnerMidAngle * Math.PI * 2;
-    // Extra full rotations for drama (at least 5)
-    const extraSpins  = (5 + Math.floor(Math.random() * 5)) * Math.PI * 2;
+    const winnerRad  = winnerMidFrac * Math.PI * 2;
+    const extraSpins = (5 + Math.floor(Math.random() * 5)) * Math.PI * 2;
     const targetDelta = direction * (extraSpins + (Math.PI * 2 - winnerRad));
-
     const startAngle  = state.spin.currentAngle;
     const endAngle    = startAngle + targetDelta;
     const startTime   = performance.now();
+    const canvas      = getBuilderCanvas();
 
-    // Disable spin button
     const spinBtn = document.getElementById('spin-btn');
-    spinBtn.disabled = true;
+    if (spinBtn) spinBtn.disabled = true;
     state.spin.isSpinning = true;
 
-    // Sound
     if (s.soundOn) SoundFX.playTick();
 
-    const canvas = getBuilderCanvas();
-
+    let lastTickMs = 0;
     const animate = (now) => {
       const elapsed  = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const eased    = this.ease(progress, easing);
+      const eased    = this.ease(progress, s.easingType || 'ease-out');
       const current  = startAngle + (endAngle - startAngle) * eased;
 
       state.spin.currentAngle = current;
       WheelRenderer.draw(canvas, state.builder, current);
 
-      // Tick sound at each segment crossing (approx)
-      if (s.soundOn && Math.floor(elapsed / 120) !== Math.floor((elapsed - 16) / 120)) {
+      if (s.soundOn && elapsed - lastTickMs > 80) {
         SoundFX.playTick();
+        lastTickMs = elapsed;
       }
 
       if (progress < 1) {
         state.spin.animFrameId = requestAnimationFrame(animate);
       } else {
-        // Snap to final angle
         state.spin.currentAngle = endAngle;
         WheelRenderer.draw(canvas, state.builder, endAngle);
         state.spin.isSpinning = false;
-        spinBtn.disabled = false;
-        this.onSpinEnd(winnerItem, winnerIndex);
+        if (spinBtn) spinBtn.disabled = false;
+        if (s.soundOn) SoundFX.playWin();
+        this.onSpinEnd(winner, winnerIdx);
       }
     };
 
     state.spin.animFrameId = requestAnimationFrame(animate);
   },
 
-  /** Weighted random picker – returns item index */
   pickWeightedRandom(items) {
-    const totalWeight = items.reduce((s, it) => s + (it.weight || 1), 0);
-    let rand = Math.random() * totalWeight;
+    const total = items.reduce((s, it) => s + (it.weight || 1), 0);
+    let rand = Math.random() * total;
     for (let i = 0; i < items.length; i++) {
       rand -= (items[i].weight || 1);
       if (rand <= 0) return i;
@@ -1266,63 +1130,48 @@ const SpinEngine = {
     return items.length - 1;
   },
 
-  /** Easing functions */
   ease(t, type) {
     switch (type) {
       case 'bounce':
-        if (t < 1 / 2.75) return 7.5625 * t * t;
-        if (t < 2 / 2.75) { t -= 1.5 / 2.75; return 7.5625 * t * t + 0.75; }
-        if (t < 2.5 / 2.75) { t -= 2.25 / 2.75; return 7.5625 * t * t + 0.9375; }
-        t -= 2.625 / 2.75;
-        return 7.5625 * t * t + 0.984375;
+        if (t < 1/2.75) return 7.5625*t*t;
+        if (t < 2/2.75) { t-=1.5/2.75; return 7.5625*t*t+0.75; }
+        if (t < 2.5/2.75) { t-=2.25/2.75; return 7.5625*t*t+0.9375; }
+        t -= 2.625/2.75; return 7.5625*t*t+0.984375;
       case 'elastic': {
         if (t === 0 || t === 1) return t;
         const p = 0.3;
-        return Math.pow(2, -10 * t) * Math.sin((t - p / 4) * (2 * Math.PI) / p) + 1;
+        return Math.pow(2, -10*t) * Math.sin((t - p/4) * (2*Math.PI) / p) + 1;
       }
-      default: // ease-out cubic
-        return 1 - Math.pow(1 - t, 3);
+      default: return 1 - Math.pow(1 - t, 3);
     }
   },
 
-  onSpinEnd(winnerItem, winnerIndex) {
-    // Confetti
-    if (state.builder.settings.confettiOn) {
-      Confetti.burst();
-    }
-    // Show result
-    ResultModal.show(winnerItem, winnerIndex);
+  onSpinEnd(winner, winnerIdx) {
+    if (state.builder.settings.confettiOn) Confetti.burst();
+    ResultModal.show(winner, winnerIdx);
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   11. RESULT MODAL
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   12. RESULT MODAL
+============================================================ */
 const ResultModal = {
   show(item, index) {
     const overlay = document.getElementById('result-overlay');
-    document.getElementById('result-emoji').textContent  = item.emoji || '🎉';
-    document.getElementById('result-title').textContent  = item.text;
-    document.getElementById('result-sub').textContent    =
-      item.weight && item.weight > 1 ? `Weight: ${item.weight}` : '';
-
+    if (!overlay) return;
+    document.getElementById('result-title').textContent = item.text;
+    document.getElementById('result-sub').textContent   = item.weight && item.weight > 1 ? 'Weight: ' + item.weight : '';
     overlay.hidden = false;
-    overlay.querySelector('.modal').focus?.();
-
-    // Store winning index for "Remove Winner"
     overlay.dataset.winnerIndex = index;
   },
 
   hide() {
-    document.getElementById('result-overlay').hidden = true;
+    const overlay = document.getElementById('result-overlay');
+    if (overlay) overlay.hidden = true;
     Confetti.clear();
   },
 
-  spinAgain() {
-    this.hide();
-    SpinEngine.spin();
-  },
+  spinAgain() { this.hide(); SpinEngine.spin(); },
 
   removeAndSpin() {
     const idx = parseInt(document.getElementById('result-overlay').dataset.winnerIndex);
@@ -1332,94 +1181,87 @@ const ResultModal = {
       WheelRenderer.draw(getBuilderCanvas(), state.builder);
     }
     this.hide();
-    if (state.builder.items.length >= 2) {
-      SpinEngine.spin();
-    } else {
-      Toast.show('Not enough items left to spin.');
-    }
+    if (state.builder.items.length >= 2) SpinEngine.spin();
+    else Toast.show('Not enough items left.');
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   12. ITEM EDITOR MODAL
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   13. ITEM EDITOR MODAL
+============================================================ */
 const ItemEditor = {
   open(index) {
     state.editingItemIndex = index;
     const item = state.builder.items[index];
+    if (!item) return;
 
-    document.getElementById('item-modal-title').textContent =
-      index === undefined ? 'New Item' : 'Edit Item';
-    document.getElementById('item-text-input').value  = item.text  || '';
-    document.getElementById('item-emoji-input').value = item.emoji || '';
-    document.getElementById('item-color-input').value = item.color || SEGMENT_COLORS[0];
-    document.getElementById('item-weight-input').value = item.weight || 1;
+    const titleEl = document.getElementById('item-modal-title');
+    if (titleEl) titleEl.textContent = 'Edit Item';
 
-    document.getElementById('item-overlay').hidden = false;
-    document.getElementById('item-text-input').focus();
+    const textEl  = document.getElementById('item-text-input');
+    const colorEl = document.getElementById('item-color-input');
+    const weightEl= document.getElementById('item-weight-input');
+    if (textEl)   textEl.value   = item.text  || '';
+    if (colorEl)  colorEl.value  = item.color || SEGMENT_COLORS[0];
+    if (weightEl) weightEl.value = item.weight || 1;
+
+    const overlay = document.getElementById('item-overlay');
+    if (overlay) overlay.hidden = false;
+    if (textEl)  textEl.focus();
   },
 
   save() {
     const idx = state.editingItemIndex;
     if (idx === null || idx === undefined) return;
 
-    const text   = document.getElementById('item-text-input').value.trim();
-    const emoji  = document.getElementById('item-emoji-input').value.trim();
-    const color  = document.getElementById('item-color-input').value;
-    const weight = Math.max(1, parseInt(document.getElementById('item-weight-input').value) || 1);
+    const textEl   = document.getElementById('item-text-input');
+    const colorEl  = document.getElementById('item-color-input');
+    const weightEl = document.getElementById('item-weight-input');
 
-    if (!text) {
-      Toast.show('Please enter a label.');
-      document.getElementById('item-text-input').focus();
-      return;
-    }
+    const text   = textEl   ? textEl.value.trim()                          : '';
+    const color  = colorEl  ? colorEl.value                                : SEGMENT_COLORS[0];
+    const weight = weightEl ? Math.max(1, parseInt(weightEl.value) || 1)   : 1;
 
-    state.builder.items[idx] = {
-      ...state.builder.items[idx],
-      text, emoji, color, weight,
-    };
+    if (!text) { Toast.show('Please enter a label.'); if (textEl) textEl.focus(); return; }
 
+    state.builder.items[idx] = { ...state.builder.items[idx], text, color, weight };
     this.close();
     BuilderView.renderItemsList();
     BuilderView.refreshWheel();
   },
 
   close() {
-    document.getElementById('item-overlay').hidden = true;
+    const overlay = document.getElementById('item-overlay');
+    if (overlay) overlay.hidden = true;
     state.editingItemIndex = null;
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   13. CONTEXT MENU
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   14. CONTEXT MENU
+============================================================ */
 const ContextMenu = {
   open(event, wheelId) {
     state.ctxTargetId = wheelId;
     const menu = document.getElementById('context-menu');
-
-    // Position near the click
+    if (!menu) return;
     const x = Math.min(event.clientX, window.innerWidth  - 200);
-    const y = Math.min(event.clientY, window.innerHeight - 260);
+    const y = Math.min(event.clientY, window.innerHeight - 270);
     menu.style.left = x + 'px';
     menu.style.top  = y + 'px';
     menu.hidden = false;
 
-    // Update favourite label
-    const wheel = state.wheels.find(w => w.id === wheelId);
+    const wheel  = state.wheels.find(w => w.id === wheelId);
     const favBtn = menu.querySelector('[data-action="favorite"]');
     if (wheel && favBtn) {
-      favBtn.textContent = wheel.favorite ? '⭐ Unfavourite' : '⭐ Favourite';
+      favBtn.childNodes[favBtn.childNodes.length - 1].textContent = wheel.favorite ? ' Unfavourite' : ' Favourite';
     }
-
-    // Focus first item
-    menu.querySelector('.ctx-btn')?.focus();
+    menu.querySelector('.ctx-btn').focus();
   },
 
   close() {
-    document.getElementById('context-menu').hidden = true;
+    const menu = document.getElementById('context-menu');
+    if (menu) menu.hidden = true;
     state.ctxTargetId = null;
   },
 
@@ -1427,114 +1269,95 @@ const ContextMenu = {
     const id = state.ctxTargetId;
     this.close();
     if (!id) return;
-
     switch (action) {
-      case 'open':
-        BuilderView.loadWheel(id);
-        break;
-      case 'edit':
-        BuilderView.loadWheel(id, true);
-        break;
-      case 'duplicate':
-        MyWheelsView.duplicateWheel(id);
-        break;
-      case 'favorite':
-        MyWheelsView.toggleFavorite(id);
-        break;
+      case 'open':      BuilderView.loadWheel(id); break;
+      case 'edit':      BuilderView.loadWheel(id, true); break;
+      case 'duplicate': MyWheelsView.duplicateWheel(id); break;
+      case 'favorite':  MyWheelsView.toggleFavorite(id); break;
       case 'rename': {
-        const wheel = state.wheels.find(w => w.id === id);
-        if (!wheel) break;
+        const w = state.wheels.find(w => w.id === id);
+        if (!w) break;
         state.renameTargetId = id;
-        document.getElementById('rename-input').value = wheel.name;
-        document.getElementById('rename-overlay').hidden = false;
-        document.getElementById('rename-input').focus();
+        const ri = document.getElementById('rename-input');
+        if (ri) ri.value = w.name;
+        const ro = document.getElementById('rename-overlay');
+        if (ro) ro.hidden = false;
+        if (ri) ri.focus();
         break;
       }
       case 'delete': {
-        const wheel = state.wheels.find(w => w.id === id);
+        const w = state.wheels.find(w => w.id === id);
         state.deleteTargetId = id;
-        document.getElementById('delete-body').textContent =
-          `Delete "${wheel ? wheel.name : 'this wheel'}"? This cannot be undone.`;
-        document.getElementById('delete-overlay').hidden = false;
+        const db = document.getElementById('delete-body');
+        if (db) db.textContent = 'Delete "' + (w ? w.name : 'this wheel') + '"? This cannot be undone.';
+        const dov = document.getElementById('delete-overlay');
+        if (dov) dov.hidden = false;
         break;
       }
     }
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   14. CONFETTI
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   15. CONFETTI
+============================================================ */
 const Confetti = {
   burst() {
-    const container = document.getElementById('confetti-container');
-    if (!container) return;
+    const c = document.getElementById('confetti-container');
+    if (!c) return;
     this.clear();
-
-    const colors = [PALETTE.mint, PALETTE.teal, PALETTE.forest, '#fff', '#FFD700'];
-
-    for (let i = 0; i < 48; i++) {
-      const piece = document.createElement('div');
-      piece.className = 'confetti-piece';
-      piece.style.cssText = `
-        left: ${Math.random() * 100}%;
-        background: ${colors[Math.floor(Math.random() * colors.length)]};
-        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
-        width:  ${6 + Math.random() * 8}px;
-        height: ${6 + Math.random() * 8}px;
-        animation-delay:    ${Math.random() * 0.5}s;
-        animation-duration: ${0.9 + Math.random() * 0.8}s;
-      `;
-      container.appendChild(piece);
+    const colors = [PALETTE.mint, PALETTE.teal, PALETTE.forest, '#fff', '#FFD700', '#FF6B6B'];
+    for (let i = 0; i < 52; i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.cssText =
+        'left:' + (Math.random() * 100) + '%;' +
+        'background:' + colors[Math.floor(Math.random() * colors.length)] + ';' +
+        'border-radius:' + (Math.random() > 0.5 ? '50%' : '2px') + ';' +
+        'width:' + (6 + Math.random() * 8) + 'px;' +
+        'height:' + (6 + Math.random() * 8) + 'px;' +
+        'animation-delay:' + (Math.random() * 0.5) + 's;' +
+        'animation-duration:' + (0.9 + Math.random() * 0.8) + 's;';
+      c.appendChild(p);
     }
-
-    // Auto-clear
-    setTimeout(() => this.clear(), 2500);
+    setTimeout(() => this.clear(), 2600);
   },
-
   clear() {
-    const container = document.getElementById('confetti-container');
-    if (container) container.innerHTML = '';
+    const c = document.getElementById('confetti-container');
+    if (c) c.innerHTML = '';
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   15. TOAST
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   16. TOAST
+============================================================ */
 const Toast = {
   _timer: null,
-
-  show(message, duration = 2800) {
+  show(msg, dur = 2800) {
     const el = document.getElementById('toast');
-    el.textContent = message;
+    if (!el) return;
+    el.textContent = msg;
     el.hidden = false;
-
-    // Force reflow so animation re-triggers
     void el.offsetWidth;
     el.classList.add('visible');
-
     clearTimeout(this._timer);
     this._timer = setTimeout(() => {
       el.classList.remove('visible');
-      setTimeout(() => { el.hidden = true; }, 320);
-    }, duration);
+      setTimeout(() => { el.hidden = true; }, 330);
+    }, dur);
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   16. DRAG & DROP (item reordering)
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   17. DRAG AND DROP
+============================================================ */
 const DragDrop = {
   dragSrcIndex: null,
 
   attachRow(row) {
-    row.addEventListener('dragstart', (e) => {
+    row.addEventListener('dragstart', () => {
       this.dragSrcIndex = parseInt(row.dataset.index);
       row.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
     });
     row.addEventListener('dragend', () => {
       row.classList.remove('dragging');
@@ -1542,20 +1365,15 @@ const DragDrop = {
     });
     row.addEventListener('dragover', (e) => {
       e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
       document.querySelectorAll('.item-row').forEach(r => r.classList.remove('drag-over'));
       row.classList.add('drag-over');
     });
     row.addEventListener('drop', (e) => {
       e.preventDefault();
-      const targetIndex = parseInt(row.dataset.index);
-      if (this.dragSrcIndex === null || this.dragSrcIndex === targetIndex) return;
-
-      // Reorder items
-      const items = state.builder.items;
-      const [moved] = items.splice(this.dragSrcIndex, 1);
-      items.splice(targetIndex, 0, moved);
-
+      const targetIdx = parseInt(row.dataset.index);
+      if (this.dragSrcIndex === null || this.dragSrcIndex === targetIdx) return;
+      const [moved] = state.builder.items.splice(this.dragSrcIndex, 1);
+      state.builder.items.splice(targetIdx, 0, moved);
       BuilderView.renderItemsList();
       BuilderView.refreshWheel();
       this.dragSrcIndex = null;
@@ -1563,112 +1381,88 @@ const DragDrop = {
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   SOUND FX (Web Audio API)
-═══════════════════════════════════════════════════════════ */
-
+/* ============================================================
+   18. SOUND FX
+============================================================ */
 const SoundFX = {
   ctx: null,
-
   getCtx() {
     if (!this.ctx) {
       try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
     }
     return this.ctx;
   },
-
   playTick() {
-    const ctx = this.getCtx();
-    if (!ctx) return;
+    const ctx = this.getCtx(); if (!ctx) return;
     try {
-      const osc  = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      const osc = ctx.createOscillator(); const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.06);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.06);
+      osc.frequency.setValueAtTime(660, ctx.currentTime);
+      gain.gain.setValueAtTime(0.07, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.055);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.06);
     } catch(e) {}
   },
-
   playWin() {
-    const ctx = this.getCtx();
-    if (!ctx) return;
+    const ctx = this.getCtx(); if (!ctx) return;
     try {
-      [523, 659, 784, 1047].forEach((freq, i) => {
-        const osc  = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = 'sine';
+      [523,659,784,1047].forEach((freq, i) => {
+        const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
         osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + i * 0.12 + 0.2);
-        osc.start(ctx.currentTime + i * 0.12);
-        osc.stop(ctx.currentTime  + i * 0.12 + 0.25);
+        gain.gain.setValueAtTime(0.14, ctx.currentTime + i*0.12);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + i*0.12 + 0.22);
+        osc.start(ctx.currentTime + i*0.12); osc.stop(ctx.currentTime + i*0.12 + 0.25);
       });
     } catch(e) {}
   },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   17. UTILITIES
-═══════════════════════════════════════════════════════════ */
-
-/** Generate a short unique ID */
-function generateId() {
-  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-}
-
-/** Deep clone an object via JSON */
-function deepClone(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
-
-/** Get value of an input/select by ID */
-function getVal(id) {
-  const el = document.getElementById(id);
-  return el ? el.value : '';
-}
-
-/** Set value of an input/select by ID */
-function setVal(id, value) {
-  const el = document.getElementById(id);
-  if (el) el.value = value;
-}
-
-/** Set checked state of a checkbox */
-function setChecked(id, checked) {
-  const el = document.getElementById(id);
-  if (el) el.checked = !!checked;
-}
-
-/** Truncate a string with ellipsis */
-function truncate(str, max) {
-  return str && str.length > max ? str.slice(0, max - 1) + '…' : str;
-}
-
-/** Add wheel id to recents (most-recent-first, max 10) */
+/* ============================================================
+   19. UTILITIES
+============================================================ */
+function generateId()    { return Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+function deepClone(obj)  { return JSON.parse(JSON.stringify(obj)); }
+function getVal(id)      { const el = document.getElementById(id); return el ? el.value : ''; }
+function setVal(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
+function setChecked(id, v){ const el = document.getElementById(id); if (el) el.checked = !!v; }
+function truncate(str, max){ return str && str.length > max ? str.slice(0, max-1) + '...' : str; }
+function getBuilderCanvas(){ return document.getElementById('wheel-canvas'); }
 function addToRecents(id) {
   state.recents = [id, ...state.recents.filter(r => r !== id)].slice(0, 10);
   Storage.saveRecents();
 }
 
-/** Get the builder canvas element */
-function getBuilderCanvas() {
-  return document.getElementById('wheel-canvas');
+/* ============================================================
+   20. INIT
+============================================================ */
+
+function seedDefaultWheels() {
+  if (state.wheels.length > 0) return;
+  ['tpl-food','tpl-movie','tpl-prize'].forEach((tplId, i) => {
+    const tpl = TEMPLATES.find(t => t.id === tplId);
+    if (!tpl) return;
+    const now = Date.now() - i * 1000;
+    state.wheels.push({
+      id: generateId(), name: tpl.name, desc: tpl.desc || '',
+      items: tpl.items.map(it => ({ ...it, id: generateId() })),
+      isTemplate:true, favorite:false, createdAt:now, updatedAt:now,
+      settings:{
+        size:420, fontFamily:'system-ui', fontSize:14, borderWidth:2,
+        pointerStyle:'arrow', centerStyle:'circle', spinDuration:5000,
+        spinDirection:'cw', easingType:'ease-out', soundOn:true,
+        confettiOn:true, bgType:'solid', bgColor:'#F5F5E8',
+        bgGradFrom:'#D4E8A0', bgGradTo:'#5BB88A',
+      },
+    });
+  });
+  Storage.saveWheels();
 }
 
-/* ═══════════════════════════════════════════════════════════
-   18. INIT – Wire up all events and boot the app
-═══════════════════════════════════════════════════════════ */
+function initEvents() {
 
-function initEventListeners() {
-
-  // ── Navigation ──────────────────────────────────────────
+  // Global nav (both static and floating)
   document.querySelectorAll('[data-view]').forEach(el => {
     el.addEventListener('click', () => {
       const view = el.dataset.view;
@@ -1677,34 +1471,25 @@ function initEventListeners() {
     });
   });
 
-  // "Browse Templates" scroll button on hero
+  // Logo links
+  document.getElementById('logo-link')?.addEventListener('click', (e) => { e.preventDefault(); Router.go('home'); });
+  document.getElementById('float-logo-link')?.addEventListener('click', (e) => { e.preventDefault(); Router.go('home'); });
+
+  // Scroll to templates
   document.querySelector('[data-scroll="templates"]')?.addEventListener('click', () => {
-    document.getElementById('templates')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('templates')?.scrollIntoView({ behavior:'smooth' });
   });
 
-  // Logo → home
-  document.getElementById('logo-link')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    Router.go('home');
+  // Hamburger
+  const ham = document.getElementById('hamburger');
+  const mob = document.getElementById('mobile-menu');
+  ham?.addEventListener('click', () => {
+    const open = ham.getAttribute('aria-expanded') === 'true';
+    ham.setAttribute('aria-expanded', String(!open));
+    mob.hidden = open;
   });
 
-  // Hamburger menu
-  const hamburger  = document.getElementById('hamburger');
-  const mobileMenu = document.getElementById('mobile-menu');
-  hamburger?.addEventListener('click', () => {
-    const expanded = hamburger.getAttribute('aria-expanded') === 'true';
-    hamburger.setAttribute('aria-expanded', String(!expanded));
-    mobileMenu.hidden = expanded;
-  });
-  mobileMenu?.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const view = btn.dataset.view;
-      if (view === 'builder') BuilderView.resetBuilder();
-      Router.go(view);
-    });
-  });
-
-  // ── My Wheels filters & search ────────────────────────
+  // My Wheels filters
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1713,104 +1498,53 @@ function initEventListeners() {
       MyWheelsView.applyFilter();
     });
   });
-
   document.getElementById('wheel-search')?.addEventListener('input', (e) => {
     state.wheelSearch = e.target.value;
     MyWheelsView.applyFilter();
   });
 
-  // ── Builder: form change listeners ───────────────────
-  const builderInputs = [
-    'wheel-name','wheel-desc','wheel-size','font-family','font-size',
-    'border-width','pointer-style','center-style','spin-duration',
-    'spin-direction','easing-type','bg-color','bg-grad-from','bg-grad-to',
-    'sound-toggle','confetti-toggle',
-  ];
-  builderInputs.forEach(id => {
-    document.getElementById(id)?.addEventListener('input', () => BuilderView.refreshWheel());
+  // Builder form inputs
+  ['wheel-name','wheel-desc','wheel-size','font-family','font-size','border-width',
+   'pointer-style','center-style','spin-duration','spin-direction','easing-type',
+   'bg-color','bg-grad-from','bg-grad-to','sound-toggle','confetti-toggle'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input',  () => BuilderView.refreshWheel());
     document.getElementById(id)?.addEventListener('change', () => BuilderView.refreshWheel());
   });
-
-  // Background type radio
   document.querySelectorAll('input[name="bg-type"]').forEach(r => {
-    r.addEventListener('change', () => {
-      BuilderView.toggleBgOpts(r.value);
-      BuilderView.refreshWheel();
-    });
+    r.addEventListener('change', () => { BuilderView.toggleBgOpts(r.value); BuilderView.refreshWheel(); });
   });
 
-  // Add item button
-  document.getElementById('add-item-btn')?.addEventListener('click', () => {
-    BuilderView.addItem();
-  });
+  document.getElementById('add-item-btn')?.addEventListener('click',  () => BuilderView.addItem());
+  document.getElementById('save-wheel-btn')?.addEventListener('click', () => BuilderView.saveWheel());
+  document.getElementById('go-spin-btn')?.addEventListener('click',    () => SpinEngine.spin());
+  document.getElementById('spin-btn')?.addEventListener('click',       () => SpinEngine.spin());
 
-  // Save wheel button
-  document.getElementById('save-wheel-btn')?.addEventListener('click', () => {
-    BuilderView.saveWheel();
-  });
+  // Result modal
+  document.getElementById('spin-again-btn')?.addEventListener('click',  () => ResultModal.spinAgain());
+  document.getElementById('remove-winner-btn')?.addEventListener('click',() => ResultModal.removeAndSpin());
+  document.getElementById('close-result-btn')?.addEventListener('click', () => ResultModal.hide());
+  document.getElementById('result-overlay')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) ResultModal.hide(); });
 
-  // Go spin (same as clicking the spin btn)
-  document.getElementById('go-spin-btn')?.addEventListener('click', () => {
-    SpinEngine.spin();
-  });
+  // Item editor
+  document.getElementById('save-item-btn')?.addEventListener('click',    () => ItemEditor.save());
+  document.getElementById('cancel-item-btn')?.addEventListener('click',  () => ItemEditor.close());
+  document.getElementById('cancel-item-btn-2')?.addEventListener('click',() => ItemEditor.close());
+  document.getElementById('item-overlay')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) ItemEditor.close(); });
+  document.getElementById('item-text-input')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') ItemEditor.save(); });
 
-  // Spin button (canvas centre)
-  document.getElementById('spin-btn')?.addEventListener('click', () => {
-    SpinEngine.spin();
-  });
-
-  // ── Result modal ──────────────────────────────────────
-  document.getElementById('spin-again-btn')?.addEventListener('click', () => {
-    ResultModal.spinAgain();
-  });
-  document.getElementById('remove-winner-btn')?.addEventListener('click', () => {
-    ResultModal.removeAndSpin();
-  });
-  document.getElementById('close-result-btn')?.addEventListener('click', () => {
-    ResultModal.hide();
-  });
-  // Close on overlay click
-  document.getElementById('result-overlay')?.addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) ResultModal.hide();
-  });
-
-  // ── Item editor modal ─────────────────────────────────
-  document.getElementById('save-item-btn')?.addEventListener('click', () => ItemEditor.save());
-  document.getElementById('cancel-item-btn')?.addEventListener('click', () => ItemEditor.close());
-  document.getElementById('item-overlay')?.addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) ItemEditor.close();
-  });
-  // Enter key in item modal
-  document.getElementById('item-text-input')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') ItemEditor.save();
-  });
-
-  // ── Context menu ──────────────────────────────────────
+  // Context menu
   document.querySelectorAll('.ctx-btn').forEach(btn => {
     btn.addEventListener('click', () => ContextMenu.handle(btn.dataset.action));
   });
-  // Close context menu on outside click
   document.addEventListener('click', (e) => {
-    if (!document.getElementById('context-menu').contains(e.target)) {
-      ContextMenu.close();
-    }
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      ContextMenu.close();
-      ResultModal.hide();
-      ItemEditor.close();
-      document.getElementById('rename-overlay').hidden = true;
-      document.getElementById('delete-overlay').hidden = true;
-    }
+    const menu = document.getElementById('context-menu');
+    if (menu && !menu.contains(e.target)) ContextMenu.close();
   });
 
-  // ── Rename modal ──────────────────────────────────────
+  // Rename modal
   document.getElementById('confirm-rename-btn')?.addEventListener('click', () => {
-    const newName = document.getElementById('rename-input').value.trim();
-    if (newName && state.renameTargetId) {
-      MyWheelsView.renameWheel(state.renameTargetId, newName);
-    }
+    const name = document.getElementById('rename-input')?.value?.trim();
+    if (name && state.renameTargetId) MyWheelsView.renameWheel(state.renameTargetId, name);
     document.getElementById('rename-overlay').hidden = true;
     state.renameTargetId = null;
   });
@@ -1824,11 +1558,9 @@ function initEventListeners() {
     if (e.key === 'Enter') document.getElementById('confirm-rename-btn').click();
   });
 
-  // ── Delete modal ──────────────────────────────────────
+  // Delete modal
   document.getElementById('confirm-delete-btn')?.addEventListener('click', () => {
-    if (state.deleteTargetId) {
-      MyWheelsView.deleteWheel(state.deleteTargetId);
-    }
+    if (state.deleteTargetId) MyWheelsView.deleteWheel(state.deleteTargetId);
     document.getElementById('delete-overlay').hidden = true;
     state.deleteTargetId = null;
   });
@@ -1839,15 +1571,22 @@ function initEventListeners() {
     if (e.target === e.currentTarget) document.getElementById('delete-overlay').hidden = true;
   });
 
-  // ── Keyboard: spin with Space on builder view ─────────
+  // Escape key closes all modals
   document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      ResultModal.hide();
+      ItemEditor.close();
+      ContextMenu.close();
+      ['rename-overlay','delete-overlay'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.hidden = true;
+      });
+    }
+    // Space to spin in builder view
     if (
       e.code === 'Space' &&
       state.currentView === 'builder' &&
-      document.activeElement.tagName !== 'INPUT' &&
-      document.activeElement.tagName !== 'TEXTAREA' &&
-      document.activeElement.tagName !== 'SELECT' &&
-      !document.getElementById('result-overlay').hidden === false
+      !['INPUT','TEXTAREA','SELECT','BUTTON'].includes(document.activeElement.tagName)
     ) {
       e.preventDefault();
       SpinEngine.spin();
@@ -1855,46 +1594,15 @@ function initEventListeners() {
   });
 }
 
-/** Seed a few template-based saved wheels so "My Wheels" isn't empty on first load */
-function seedDefaultWheels() {
-  if (state.wheels.length > 0) return; // already have wheels
-
-  const seeds = ['tpl-food', 'tpl-movie', 'tpl-prize'];
-  seeds.forEach((tplId, i) => {
-    const tpl = TEMPLATES.find(t => t.id === tplId);
-    if (!tpl) return;
-    const now = Date.now() - i * 1000;
-    state.wheels.push({
-      id:         generateId(),
-      name:       tpl.name,
-      desc:       tpl.desc,
-      items:      tpl.items.map(it => ({ ...it, id: generateId() })),
-      isTemplate: true,
-      favorite:   false,
-      createdAt:  now,
-      updatedAt:  now,
-      settings: {
-        size: 420, fontFamily: 'system-ui', fontSize: 14,
-        borderWidth: 2, pointerStyle: 'arrow', centerStyle: 'circle',
-        spinDuration: 5000, spinDirection: 'cw', easingType: 'ease-out',
-        soundOn: true, confettiOn: true,
-        bgType: 'solid', bgColor: '#F5F5E8', bgGradFrom: '#D4E8A0', bgGradTo: '#5BB88A',
-      },
-    });
-  });
-  Storage.saveWheels();
-}
-
-/** Boot the application */
 function boot() {
   Storage.load();
   seedDefaultWheels();
-  initEventListeners();
+  FloatingNav.init();
+  initEvents();
   HeroWheel.init();
   Router.go('home');
 }
 
-// Start when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', boot);
 } else {
