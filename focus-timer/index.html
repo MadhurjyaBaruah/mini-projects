@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focus Timer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <span class="logo-mark">focus</span>
+    <span class="session-label">session <span id="session-count">1</span></span>
+  </header>
+
+  <main class="main-wrap">
+
+    <div class="mode-tabs" role="tablist" aria-label="Timer mode">
+      <button class="tab active" id="tab-focus"   role="tab" data-mode="focus"   data-minutes="25">Focus</button>
+      <button class="tab"        id="tab-short"   role="tab" data-mode="short"   data-minutes="5">Short Break</button>
+      <button class="tab"        id="tab-long"    role="tab" data-mode="long"    data-minutes="15">Long Break</button>
+    </div>
+
+    <div class="timer-stage">
+      <svg class="ring-svg" viewBox="0 0 260 260" aria-hidden="true">
+        <circle class="ring-track" cx="130" cy="130" r="114" />
+        <circle class="ring-fill"  cx="130" cy="130" r="114" id="ring-fill" />
+      </svg>
+
+      <div class="timer-face">
+        <div class="time-display" id="time-display" aria-live="polite" aria-label="Time remaining">25:00</div>
+        <div class="mode-label"  id="mode-label">Focus</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn-reset" id="btn-reset" aria-label="Reset timer">Reset</button>
+      <button class="btn-primary" id="btn-start" aria-label="Start timer">Start</button>
+      <button class="btn-skip"  id="btn-skip"  aria-label="Skip to next session">Skip</button>
+    </div>
+
+    <div class="session-dots" id="session-dots" aria-label="Session progress">
+      <span class="dot active" aria-label="Session 1 current"></span>
+      <span class="dot"        aria-label="Session 2"></span>
+      <span class="dot"        aria-label="Session 3"></span>
+      <span class="dot"        aria-label="Session 4"></span>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <span class="stat-value" id="stat-completed">0</span>
+        <span class="stat-key">completed</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-value" id="stat-minutes">0</span>
+        <span class="stat-key">minutes focused</span>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <span>stay consistent, stay focused</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
