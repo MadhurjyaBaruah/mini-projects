@@ -49,10 +49,10 @@ Break mode switches the ring stroke from teal to chartreuse so the resting state
 
 ## Live demo
 
-[View on GitHub Pages](https://yourusername.github.io/mini-projects/focus-timer/)
+[View on GitHub Pages](https://madhurjyabaruah.github.io/mini-projects/focus-timer/)
 
-> Replace the URL above with your actual GitHub Pages link after deploying.
+
 
 ## Part of
 
-[mini-projects](https://github.com/yourusername/mini-projects) - a collection of small, self-contained tools built with web standards.
+[mini-projects](https://github.com/MadhurjyaBaruah/mini-projects/) - a collection of small, self-contained tools built with web standards.
