@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Habit Tracker</title>
+<meta name="description" content="A small local habit tracker. Add a habit, mark it done each day, and watch a streak map fill in.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M6 26C4 14 12 6 26 6c1 12-7 20-20 20Z' fill='%23118B50'/%3E%3Cpath d='M8 24C10 15 15 10 24 8' fill='none' stroke='%23E3F0AF' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,500&family=Manrope:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page">
+
+  <header class="site-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <h1>Habit Tracker</h1>
+        <p class="tagline">Small actions, kept in view.</p>
+      </div>
+    </div>
+
+    <dl class="stat-row">
+      <div class="stat">
+        <dt>Habits</dt>
+        <dd id="statHabits">0</dd>
+      </div>
+      <div class="stat">
+        <dt>Done today</dt>
+        <dd id="statToday">0 / 0</dd>
+      </div>
+      <div class="stat">
+        <dt>Longest streak</dt>
+        <dd id="statLongest">0</dd>
+      </div>
+    </dl>
+  </header>
+
+  <form class="add-form" id="addForm">
+    <label for="habitInput" class="visually-hidden">New habit name</label>
+    <input
+      type="text"
+      id="habitInput"
+      name="habit"
+      placeholder="Add a habit, like Read 20 minutes"
+      maxlength="60"
+      autocomplete="off"
+      required
+    >
+    <button type="submit">Add habit</button>
+  </form>
+
+  <main>
+    <ul class="habit-list" id="habitList"></ul>
+
+    <div class="empty-state" id="emptyState" hidden>
+      <p class="empty-title">No habits yet</p>
+      <p class="empty-sub">Add one above, then mark each day you keep it. The map fills in as you go.</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>Kept only in this browser's storage. Clearing site data clears these habits.</p>
+  </footer>
+
+</div>
+
+<template id="habitTemplate">
+  <li class="habit-card" data-id="">
+    <div class="habit-top">
+      <div class="habit-name-wrap">
+        <h2 class="habit-name"></h2>
+        <button class="delete-btn" type="button" aria-label="Delete habit">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <path d="M4 6h16M9 6V4h6v2m-8 0 1 14h10l1-14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="habit-controls">
+        <div class="streak-figures">
+          <div class="figure">
+            <span class="figure-num current-streak">0</span>
+            <span class="figure-label">current</span>
+          </div>
+          <div class="figure">
+            <span class="figure-num best-streak">0</span>
+            <span class="figure-label">best</span>
+          </div>
+        </div>
+
+        <button class="leaf-toggle" type="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+            <path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="heatmap-scroll">
+      <div class="heatmap">
+        <div class="heatmap-corner"></div>
+        <div class="heatmap-months"></div>
+        <div class="heatmap-weekdays">
+          <span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span>
+        </div>
+        <div class="heatmap-cells"></div>
+      </div>
+    </div>
+  </li>
+</template>
+
+<script src="script.js"></script>
+</body>
+</html>
