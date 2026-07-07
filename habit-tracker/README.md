@@ -1,55 +1,53 @@
-# Habit Tracker
+# Streaks
 
-A small local habit tracker. Add a habit, mark it done for the day, and a streak map fills in below it, similar in spirit to a GitHub contribution graph, except the color of each square is driven by how long the streak was on that day rather than a flat done or not-done state.
+A small, local habit tracker. Add the habits you are trying to keep, mark a day once you have done it, and watch the shading build as a streak grows.
 
-No build step, no backend, no accounts. Everything lives in the browser's `localStorage`, so it works as a static page on GitHub Pages.
+![Streaks screenshot](screenshot.png)
+
+## Why this one
+
+Most habit trackers just mark a day as done or not done. Streaks instead colors every day by how many days in a row the habit had already been kept as of that day. A single day off is pale, a few days in a row moves to teal, a week or more turns forest green. The moment a streak breaks, the color drops straight back down. The grid ends up reading like a small story of momentum gained and lost, not just a checklist.
+
+The four colors are not a separate design choice from the data. They are the exact palette used throughout the page, reused as the four levels of the heatmap.
 
 ## Features
 
-- Add any number of habits by name.
-- Mark today done from a single button on each habit card.
-- Click any past square in the streak map to correct an earlier day, useful if you forgot to log something yesterday.
-- Current streak and best streak shown per habit, computed from the actual completion history rather than stored as separate counters, so they can never drift out of sync with the map.
-- A streak map covering the last 17 weeks per habit. Color depth increases with how many consecutive days the streak had reached by that date: a single day is a pale square, a month-long run is the deepest green in the palette.
-- Header stats summarizing total habits, how many are done today, and the longest streak across all of them.
-- Deleting a habit asks for confirmation first, since it also removes its history.
-- Works down to a small phone width; the streak map scrolls horizontally within its card and opens already scrolled to the current week.
+- Add and remove habits, each with its own history
+- Click any past or present day to mark it done or undo it
+- A 13 week heatmap per habit, with month labels, in the style of a contribution graph
+- Current streak, longest streak, and completion rate for the last 90 days, per habit
+- Everything is saved to `localStorage`, so your log is still there next time you open the page
+- No build step, no dependencies to install, works from a single static folder
 
-## How the streak math works
+## Using it
 
-`script.js` keeps completions as a plain array of `YYYY-MM-DD` strings per habit. From that array:
+Open `index.html` in a browser, or visit the GitHub Pages link for this project. Type a habit name, press Add, and click today's cell once you have done it. Click a cell again to undo it. Click "remove" on a habit to delete it and its full history, after a confirmation.
 
-- **Current streak** counts backward from today. If today has not been marked yet, it checks yesterday first, so the streak stays alive until the day actually ends rather than resetting the moment you wake up.
-- **Best streak** sorts the completion dates and finds the longest run of consecutive days anywhere in the history.
-- **Map color** is computed the same way, but per date: each day gets the length of the run ending on that day, which is then bucketed into one of five shades mixed from the palette's pale, sage, and forest tones.
+Nothing is sent anywhere. The log lives only in the browser you are using, on the device you are using it on. Clearing your browser's site data for this page will clear the log along with it.
 
-These three numbers are recalculated from the raw dates on every render rather than cached, so there is nothing to keep in sync by hand.
+## Built with
+
+Plain HTML, CSS, and JavaScript. No frameworks, no build tools, no external JavaScript libraries. The only external resources are the Google Fonts used for type (Fraunces, IBM Plex Sans, IBM Plex Mono).
 
 ## Files
 
 ```
 habit-tracker/
-  index.html
-  style.css
-  script.js
-  README.md
+  index.html      structure and copy
+  style.css       palette, type, and layout
+  script.js       storage, streak math, and the heatmap renderer
+  README.md       this file
+  screenshot.png  preview used above
 ```
 
-Everything is vanilla HTML, CSS, and JavaScript with no dependencies, so it can sit as its own folder inside a repo of mini projects and be linked to directly, for example `your-username.github.io/mini-projects/habit-tracker/`.
+## Running locally
 
-## Running it locally
-
-Any static file server works, for example:
+No install needed. Clone the repository and open `habit-tracker/index.html` directly in a browser, or serve the folder with any static file server, for example:
 
 ```
-cd habit-tracker
-python3 -m http.server 8000
+npx serve habit-tracker
 ```
 
-Then open `http://localhost:8000` in a browser. Opening `index.html` directly by double-clicking it also works, since nothing here depends on a server.
+## Part of mini-projects
 
-## Notes
-
-- Data is stored only in the browser that added it, under the `localStorage` key `habit-tracker:habits`. There is no sync between devices and no server involved.
-- Clearing site data or browsing storage for the page removes the habits.
-- The page loads the Fraunces, Manrope, and Space Mono fonts from Google Fonts. If you would rather not depend on that, swap the `<link>` tags in `index.html` for local font files and point the `--font-*` variables in `style.css` at them.
+This is one of several small, self-contained tools in this repository, alongside the weather app, tuner, spinner wheel, QR generator, and focus timer. Each project is a single static page meant to be dropped straight onto GitHub Pages.
