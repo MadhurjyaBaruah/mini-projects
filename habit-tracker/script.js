@@ -1,347 +1,317 @@
+/* Streaks
+   A small local habit log. No backend, no build step.
+   Everything lives in localStorage under STORAGE_KEY.
+
+   The one idea worth explaining: each day cell is colored
+   by how many days in a row the habit had been kept as of
+   that day (its "momentum"), not just whether it was done.
+   That is why a single habit's row fades from pale to teal
+   to forest as a streak grows, and drops back to cream the
+   moment it breaks. */
+
 (function () {
   'use strict';
 
-  var STORAGE_KEY = 'habit-tracker:habits';
-  var WEEKS_SHOWN = 17;
-  var CELL_SIZE = 11;
-  var CELL_GAP = 3;
-  var CELL_STEP = CELL_SIZE + CELL_GAP;
+  var STORAGE_KEY = 'streaks:v1';
+  var DAYS_SHOWN = 91; // 13 weeks, keeps the grid a clean multiple of 7
 
-  var MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var habitListEl = document.getElementById('habitList');
+  var emptyStateEl = document.getElementById('emptyState');
+  var habitInputEl = document.getElementById('habitInput');
+  var addHabitBtn = document.getElementById('addHabitBtn');
+  var todayLabelEl = document.getElementById('todayLabel');
 
-  // Anchors taken straight from the source palette. The two in-between
-  // shades are mixed at render time rather than picked by eye, so the
-  // gradient always reads as one continuous scale.
-  var PALE = '#E3F0AF';
-  var SAGE = '#5DB996';
-  var FOREST = '#118B50';
-  var WELL = '#F0EAD8';
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-  var LEVEL_COLORS = [
-    WELL,
-    PALE,
-    mixHex(PALE, SAGE, 0.5),
-    SAGE,
-    mixHex(SAGE, FOREST, 0.5),
-    FOREST
-  ];
-
-  // ---------- elements ----------
-
-  var addForm = document.getElementById('addForm');
-  var habitInput = document.getElementById('habitInput');
-  var habitList = document.getElementById('habitList');
-  var emptyState = document.getElementById('emptyState');
-  var template = document.getElementById('habitTemplate');
-
-  var statHabits = document.getElementById('statHabits');
-  var statToday = document.getElementById('statToday');
-  var statLongest = document.getElementById('statLongest');
-
-  // ---------- date helpers ----------
-  // All arithmetic happens on local calendar dates. Keys are plain
-  // YYYY-MM-DD strings so storage stays readable and timezone-proof.
-
-  function startOfDay(date) {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  function todayDate() {
+    var d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
   }
 
-  function addDays(date, amount) {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate() + amount);
-  }
-
-  function toKey(date) {
+  function formatKey(date) {
     var y = date.getFullYear();
     var m = String(date.getMonth() + 1).padStart(2, '0');
     var d = String(date.getDate()).padStart(2, '0');
     return y + '-' + m + '-' + d;
   }
 
-  function keyToIndex(key) {
-    var parts = key.split('-');
-    return Math.round(Date.UTC(+parts[0], +parts[1] - 1, +parts[2]) / 86400000);
+  function parseKey(key) {
+    var parts = key.split('-').map(Number);
+    return new Date(parts[0], parts[1] - 1, parts[2]);
   }
 
-  function dateToIndex(date) {
-    return Math.round(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000);
+  function addDays(date, n) {
+    var d = new Date(date);
+    d.setDate(d.getDate() + n);
+    return d;
   }
 
-  function formatLong(date) {
-    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  }
-
-  // ---------- color helpers ----------
-
-  function hexToRgb(hex) {
-    var n = parseInt(hex.slice(1), 16);
-    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
-  }
-
-  function mixHex(a, b, t) {
-    var ca = hexToRgb(a);
-    var cb = hexToRgb(b);
-    var r = Math.round(ca.r + (cb.r - ca.r) * t);
-    var g = Math.round(ca.g + (cb.g - ca.g) * t);
-    var bl = Math.round(ca.b + (cb.b - ca.b) * t);
-    return 'rgb(' + r + ',' + g + ',' + bl + ')';
-  }
-
-  // ---------- storage ----------
-
-  function loadHabits() {
+  function loadState() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
+      if (!raw) return { habits: [] };
+      var parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.habits)) return { habits: [] };
+      return parsed;
     } catch (err) {
       console.warn('Could not read saved habits, starting fresh.', err);
-      return [];
+      return { habits: [] };
     }
   }
 
-  function saveHabits(habits) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
+  var state = loadState();
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (err) {
+      console.warn('Could not save habits.', err);
+    }
   }
 
   function makeId() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    return 'h_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
   }
 
-  // ---------- streak math ----------
+  function addHabit(rawName) {
+    var name = rawName.trim();
+    if (!name) return;
+    state.habits.push({
+      id: makeId(),
+      name: name,
+      createdAt: formatKey(todayDate()),
+      log: {}
+    });
+    saveState();
+    render();
+  }
 
-  function currentStreak(habit) {
-    var done = new Set(habit.completions);
-    var cursor = startOfDay(new Date());
+  function removeHabit(id) {
+    var habit = state.habits.find(function (h) { return h.id === id; });
+    if (!habit) return;
+    var ok = window.confirm('Remove "' + habit.name + '" and its full history? This cannot be undone.');
+    if (!ok) return;
+    state.habits = state.habits.filter(function (h) { return h.id !== id; });
+    saveState();
+    render();
+  }
 
-    if (!done.has(toKey(cursor))) {
+  function toggleDay(habit, dateKey) {
+    if (habit.log[dateKey]) {
+      delete habit.log[dateKey];
+    } else {
+      habit.log[dateKey] = true;
+    }
+    saveState();
+    render();
+  }
+
+  function momentumLevel(habit, date) {
+    var key = formatKey(date);
+    if (!habit.log[key]) return 0;
+    var streak = 0;
+    var cursor = new Date(date);
+    while (habit.log[formatKey(cursor)]) {
+      streak++;
       cursor = addDays(cursor, -1);
-      if (!done.has(toKey(cursor))) return 0;
     }
+    if (streak >= 7) return 3;
+    if (streak >= 3) return 2;
+    return 1;
+  }
 
-    var count = 0;
-    while (done.has(toKey(cursor))) {
-      count++;
+  function computeStats(habit) {
+    var today = todayDate();
+
+    var current = 0;
+    var cursor = new Date(today);
+    while (habit.log[formatKey(cursor)]) {
+      current++;
       cursor = addDays(cursor, -1);
     }
-    return count;
-  }
 
-  function bestStreak(habit) {
-    if (habit.completions.length === 0) return 0;
-    var days = habit.completions.map(keyToIndex).sort(function (a, b) { return a - b; });
-    var best = 1;
-    var run = 1;
-    for (var i = 1; i < days.length; i++) {
-      if (days[i] === days[i - 1]) continue;
-      run = days[i] === days[i - 1] + 1 ? run + 1 : 1;
-      if (run > best) best = run;
-    }
-    return best;
-  }
-
-  // Run length ending on each completed day, so the heatmap can shade a
-  // date by how long the streak had grown by that point rather than a
-  // flat done/not-done color.
-  function runsEndingOnEachDay(habit) {
-    var days = habit.completions.map(keyToIndex).sort(function (a, b) { return a - b; });
-    var runs = new Map();
+    var doneDates = Object.keys(habit.log).filter(function (k) { return habit.log[k]; }).sort();
+    var longest = 0;
     var run = 0;
     var prev = null;
-    for (var i = 0; i < days.length; i++) {
-      var d = days[i];
-      if (d === prev) continue;
-      run = (prev !== null && d === prev + 1) ? run + 1 : 1;
-      runs.set(d, run);
-      prev = d;
-    }
-    return runs;
-  }
-
-  function depthToLevel(depth) {
-    if (depth <= 0) return 0;
-    if (depth <= 2) return 1;
-    if (depth <= 6) return 2;
-    if (depth <= 13) return 3;
-    if (depth <= 29) return 4;
-    return 5;
-  }
-
-  // ---------- actions ----------
-
-  function addHabit(name) {
-    var trimmed = name.trim();
-    if (!trimmed) return;
-    var habits = loadHabits();
-    habits.push({
-      id: makeId(),
-      name: trimmed,
-      createdAt: toKey(startOfDay(new Date())),
-      completions: []
+    doneDates.forEach(function (key) {
+      if (prev && formatKey(addDays(prev, 1)) === key) {
+        run++;
+      } else {
+        run = 1;
+      }
+      longest = Math.max(longest, run);
+      prev = parseKey(key);
     });
-    saveHabits(habits);
-    render();
-  }
 
-  function deleteHabit(id) {
-    var habits = loadHabits();
-    var habit = habits.find(function (h) { return h.id === id; });
-    if (!habit) return;
-    var confirmed = window.confirm('Delete "' + habit.name + '" and its history?');
-    if (!confirmed) return;
-    saveHabits(habits.filter(function (h) { return h.id !== id; }));
-    render();
-  }
-
-  function toggleCompletion(id, dateKey) {
-    var habits = loadHabits();
-    var habit = habits.find(function (h) { return h.id === id; });
-    if (!habit) return;
-    var i = habit.completions.indexOf(dateKey);
-    if (i === -1) {
-      habit.completions.push(dateKey);
-    } else {
-      habit.completions.splice(i, 1);
+    var doneIn90 = 0;
+    for (var i = 0; i < 90; i++) {
+      if (habit.log[formatKey(addDays(today, -i))]) doneIn90++;
     }
-    saveHabits(habits);
-    render();
+    var rate = Math.round((doneIn90 / 90) * 100);
+
+    return { current: current, longest: longest, rate: rate };
   }
 
-  // ---------- heatmap ----------
+  function buildCalendarDates() {
+    var today = todayDate();
+    var start = addDays(today, -(DAYS_SHOWN - 1));
+    var gridStart = addDays(start, -start.getDay());
+    var gridEnd = addDays(today, 6 - today.getDay());
+    var dates = [];
+    var d = new Date(gridStart);
+    while (d <= gridEnd) {
+      dates.push(new Date(d));
+      d = addDays(d, 1);
+    }
+    return { dates: dates, today: today };
+  }
 
-  function buildHeatmap(habit, monthsEl, cellsEl) {
-    var today = startOfDay(new Date());
-    var currentSunday = addDays(today, -today.getDay());
-    var startSunday = addDays(currentSunday, -(WEEKS_SHOWN - 1) * 7);
-    var runs = runsEndingOnEachDay(habit);
+  function buildMonthRow(dates) {
+    var row = document.createElement('div');
+    row.className = 'month-row';
+    var columns = dates.length / 7;
+    var lastLabel = '';
+    for (var c = 0; c < columns; c++) {
+      var firstOfColumn = dates[c * 7];
+      var monthName = MONTHS[firstOfColumn.getMonth()];
+      var label = '';
+      if (monthName !== lastLabel && firstOfColumn.getDate() <= 7) {
+        label = monthName;
+        lastLabel = monthName;
+      }
+      var cell = document.createElement('span');
+      cell.textContent = label;
+      row.appendChild(cell);
+    }
+    return row;
+  }
 
-    cellsEl.style.gridTemplateColumns = 'repeat(' + WEEKS_SHOWN + ', ' + CELL_SIZE + 'px)';
-    monthsEl.style.width = (WEEKS_SHOWN * CELL_SIZE + (WEEKS_SHOWN - 1) * CELL_GAP) + 'px';
+  function buildHeatmap(habit) {
+    var wrap = document.createElement('div');
+    wrap.className = 'heatmap-wrap';
 
-    var lastMonth = null;
+    var calendar = buildCalendarDates();
+    wrap.appendChild(buildMonthRow(calendar.dates));
 
-    for (var week = 0; week < WEEKS_SHOWN; week++) {
-      var weekStart = addDays(startSunday, week * 7);
+    var grid = document.createElement('div');
+    grid.className = 'heatmap';
+    grid.setAttribute('role', 'grid');
+    grid.setAttribute('aria-label', habit.name + ' history, last ' + DAYS_SHOWN + ' days');
 
-      var month = weekStart.getMonth();
-      if (month !== lastMonth) {
-        var label = document.createElement('span');
-        label.textContent = MONTH_NAMES[month];
-        label.style.left = (week * CELL_STEP) + 'px';
-        monthsEl.appendChild(label);
-        lastMonth = month;
+    var todayKey = formatKey(calendar.today);
+
+    calendar.dates.forEach(function (date) {
+      var key = formatKey(date);
+      var isFuture = date > calendar.today;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'day-cell';
+
+      if (isFuture) {
+        btn.classList.add('is-future');
+        btn.tabIndex = -1;
+        btn.setAttribute('aria-hidden', 'true');
+      } else {
+        var level = momentumLevel(habit, date);
+        if (level > 0) btn.classList.add('level-' + level);
+        if (key === todayKey) btn.classList.add('is-today');
+
+        var weekday = WEEKDAYS[date.getDay()];
+        var monthName = MONTHS[date.getMonth()];
+        var status = habit.log[key] ? 'done' : 'not done';
+        btn.setAttribute('aria-label', weekday + ' ' + monthName + ' ' + date.getDate() + ', ' + status);
+        btn.title = monthName + ' ' + date.getDate() + ': ' + status;
+
+        btn.addEventListener('click', function () {
+          toggleDay(habit, key);
+        });
       }
 
-      for (var day = 0; day < 7; day++) {
-        var date = addDays(weekStart, day);
-        var isFuture = date > today;
-        var cell;
+      grid.appendChild(btn);
+    });
 
-        if (isFuture) {
-          cell = document.createElement('div');
-          cell.className = 'heatmap-cell is-future';
-        } else {
-          var key = toKey(date);
-          var idx = dateToIndex(date);
-          var depth = runs.get(idx) || 0;
-          var level = depthToLevel(depth);
-
-          cell = document.createElement('button');
-          cell.type = 'button';
-          cell.className = 'heatmap-cell is-clickable';
-          cell.style.background = LEVEL_COLORS[level];
-          var label = formatLong(date) + ' - ' + (depth > 0 ? depth + '-day streak' : 'not done');
-          cell.title = label;
-          cell.setAttribute('aria-label', label);
-          cell.setAttribute('aria-pressed', depth > 0 ? 'true' : 'false');
-          // Excluded from the Tab sequence on purpose: a habit's grid is
-          // ~120 cells, and the leaf toggle already covers the common
-          // case of marking today from the keyboard. Mouse and touch
-          // users can still click any day to fix an earlier entry.
-          cell.tabIndex = -1;
-          cell.addEventListener('click', function (habitId, dateKey) {
-            return function () { toggleCompletion(habitId, dateKey); };
-          }(habit.id, key));
-        }
-
-        cell.style.gridColumn = String(week + 1);
-        cell.style.gridRow = String(day + 1);
-        cellsEl.appendChild(cell);
-      }
-    }
+    wrap.appendChild(grid);
+    return wrap;
   }
-
-  // ---------- rendering ----------
 
   function buildHabitCard(habit) {
-    var node = template.content.firstElementChild.cloneNode(true);
-    node.dataset.id = habit.id;
-    node.querySelector('.habit-name').textContent = habit.name;
+    var card = document.createElement('article');
+    card.className = 'habit-card';
 
-    var todayKey = toKey(startOfDay(new Date()));
-    var doneToday = habit.completions.indexOf(todayKey) !== -1;
+    var top = document.createElement('div');
+    top.className = 'habit-card-top';
 
-    node.querySelector('.current-streak').textContent = currentStreak(habit);
-    node.querySelector('.best-streak').textContent = bestStreak(habit);
+    var name = document.createElement('h2');
+    name.className = 'habit-name';
+    name.textContent = habit.name;
 
-    var toggle = node.querySelector('.leaf-toggle');
-    toggle.setAttribute('aria-pressed', doneToday ? 'true' : 'false');
-    toggle.setAttribute('aria-label', doneToday ? 'Mark today not done' : 'Mark today done');
-    toggle.addEventListener('click', function () {
-      toggleCompletion(habit.id, todayKey);
+    var removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = 'remove';
+    removeBtn.addEventListener('click', function () {
+      removeHabit(habit.id);
     });
 
-    var deleteBtn = node.querySelector('.delete-btn');
-    deleteBtn.setAttribute('aria-label', 'Delete ' + habit.name);
-    deleteBtn.addEventListener('click', function () {
-      deleteHabit(habit.id);
-    });
+    top.appendChild(name);
+    top.appendChild(removeBtn);
 
-    var monthsEl = node.querySelector('.heatmap-months');
-    var cellsEl = node.querySelector('.heatmap-cells');
-    buildHeatmap(habit, monthsEl, cellsEl);
+    var stats = computeStats(habit);
+    var statsRow = document.createElement('div');
+    statsRow.className = 'habit-stats';
 
-    return node;
-  }
+    var s1 = document.createElement('span');
+    s1.innerHTML = 'current streak <b>' + stats.current + '</b>';
+    var s2 = document.createElement('span');
+    s2.innerHTML = 'longest <b>' + stats.longest + '</b>';
+    var s3 = document.createElement('span');
+    s3.innerHTML = 'last 90 days <b>' + stats.rate + '%</b>';
+    statsRow.appendChild(s1);
+    statsRow.appendChild(s2);
+    statsRow.appendChild(s3);
 
-  function updateStats(habits) {
-    var todayKey = toKey(startOfDay(new Date()));
-    var doneToday = habits.filter(function (h) { return h.completions.indexOf(todayKey) !== -1; }).length;
-    var longest = habits.reduce(function (max, h) { return Math.max(max, bestStreak(h)); }, 0);
+    card.appendChild(top);
+    card.appendChild(statsRow);
+    card.appendChild(buildHeatmap(habit));
 
-    statHabits.textContent = habits.length;
-    statToday.textContent = doneToday + ' / ' + habits.length;
-    statLongest.textContent = longest;
+    return card;
   }
 
   function render() {
-    var habits = loadHabits();
-    habitList.innerHTML = '';
-
-    if (habits.length === 0) {
-      emptyState.hidden = false;
-    } else {
-      emptyState.hidden = true;
-      habits.forEach(function (habit) {
-        habitList.appendChild(buildHabitCard(habit));
-      });
+    habitListEl.innerHTML = '';
+    if (state.habits.length === 0) {
+      emptyStateEl.classList.add('show');
+      return;
     }
-
-    updateStats(habits);
-
-    // The most recent weeks matter most, so start the strip scrolled
-    // all the way to the right instead of showing the oldest data.
-    document.querySelectorAll('.heatmap-scroll').forEach(function (el) {
-      el.scrollLeft = el.scrollWidth;
+    emptyStateEl.classList.remove('show');
+    state.habits.forEach(function (habit) {
+      habitListEl.appendChild(buildHabitCard(habit));
     });
   }
 
-  // ---------- events ----------
+  function renderToday() {
+    var today = todayDate();
+    var weekday = WEEKDAYS[today.getDay()].slice(0, 3);
+    var monthName = MONTHS[today.getMonth()];
+    todayLabelEl.textContent = weekday + ' ' + String(today.getDate()).padStart(2, '0') + ' ' + monthName + ' ' + today.getFullYear();
+  }
 
-  addForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    addHabit(habitInput.value);
-    habitInput.value = '';
-    habitInput.focus();
+  addHabitBtn.addEventListener('click', function () {
+    addHabit(habitInputEl.value);
+    habitInputEl.value = '';
+    habitInputEl.focus();
   });
 
+  habitInputEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      addHabit(habitInputEl.value);
+      habitInputEl.value = '';
+    }
+  });
+
+  renderToday();
   render();
 })();
