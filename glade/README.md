@@ -4,6 +4,8 @@ A small, single-page typing test. Pick a time limit or a word count, type the
 words as they appear, and get your speed and accuracy when you are done. Part
 of the `mini-projects` collection.
 
+![Glade screenshot](screenshot.png)
+
 Live text moves through a highlighted "clearing" as you type, untyped words
 sit in a soft haze until you reach them, and your results are shown as a pair
 of growth-ring style arcs rather than a plain progress bar.
