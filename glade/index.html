@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glade - typing speed test</title>
+  <meta name="description" content="A small typing speed test. Time yourself or type a fixed set of words, then see your words per minute and accuracy.">
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="scene">
+
+    <header class="site-header">
+      <p class="eyebrow">typing practice</p>
+      <h1 class="wordmark">Glade</h1>
+      <p class="tagline">A quiet clearing to clock your typing speed.</p>
+    </header>
+
+    <main class="panel" id="panel">
+
+      <!-- test configuration -->
+      <div class="config-row" id="configRow">
+        <div class="pill-group" id="modeGroup" role="group" aria-label="Test type">
+          <button class="pill" data-mode="time" data-active="true">time</button>
+          <button class="pill" data-mode="words">words</button>
+        </div>
+        <div class="pill-group" id="valueGroup" role="group" aria-label="Test length"></div>
+      </div>
+
+      <!-- typing area -->
+      <section class="type-stage" id="typeStage">
+        <div class="live-row" aria-live="off">
+          <span class="live-figure" id="liveTime">0:15</span>
+          <span class="live-figure" id="liveWpm">0 wpm</span>
+        </div>
+
+        <div class="words-viewport" id="wordsViewport">
+          <div class="words" id="words"></div>
+        </div>
+
+        <input
+          type="text"
+          id="hiddenInput"
+          class="hidden-input"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          aria-label="Typing input"
+        >
+
+        <div class="stage-foot">
+          <button class="restart-btn" id="restartBtn" title="Restart (Tab then Enter)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-3.2-6.9"/>
+              <path d="M21 3v6h-6"/>
+            </svg>
+            <span>restart</span>
+          </button>
+          <p class="stage-hint">click the text, then type &middot; tab, then enter to restart</p>
+        </div>
+      </section>
+
+      <!-- results -->
+      <section class="results" id="results" hidden>
+        <div class="results-top">
+          <div class="rings" id="ringWrap">
+            <svg viewBox="0 0 200 200" width="180" height="180" id="ringSvg">
+              <circle class="ring-track" cx="100" cy="100" r="86" />
+              <circle class="ring-track ring-track--inner" cx="100" cy="100" r="66" />
+              <circle class="ring-value" id="ringAccuracy" cx="100" cy="100" r="86" />
+              <circle class="ring-value ring-value--inner" id="ringWpm" cx="100" cy="100" r="66" />
+            </svg>
+            <div class="ring-center">
+              <span class="ring-number" id="resultWpm">0</span>
+              <span class="ring-label">words / min</span>
+            </div>
+          </div>
+
+          <dl class="stat-list">
+            <div class="stat-row">
+              <dt>accuracy</dt>
+              <dd id="resultAccuracy">0%</dd>
+            </div>
+            <div class="stat-row">
+              <dt>raw speed</dt>
+              <dd id="resultRaw">0 wpm</dd>
+            </div>
+            <div class="stat-row">
+              <dt>characters</dt>
+              <dd id="resultChars">0 correct, 0 missed</dd>
+            </div>
+            <div class="stat-row">
+              <dt>time</dt>
+              <dd id="resultTime">0s</dd>
+            </div>
+            <div class="stat-row" id="bestRow" hidden>
+              <dt>&nbsp;</dt>
+              <dd class="best-pill">new best for this test</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="results-actions">
+          <button class="restart-btn restart-btn--solid" id="typeAgainBtn">type again</button>
+        </div>
+
+        <div class="history" id="historyWrap">
+          <div class="history-head">
+            <h2>previous runs</h2>
+            <button class="text-btn" id="clearHistoryBtn">clear</button>
+          </div>
+          <ul class="history-list" id="historyList"></ul>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      <p>No frameworks, no build step. One page of HTML, CSS and JavaScript.</p>
+    </footer>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
