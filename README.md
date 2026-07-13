@@ -24,6 +24,8 @@ mini-projects/
 | PitchFork | A real-time instrument tuner that runs entirely inside the browser tab. No installs, no accounts, no audio ever leaves your device. | not ready |
 | SpinHub | SpinHub is a browser-based decision-making app built around spinning wheels. | not ready |
 | Focus Timer | A minimal Pomodoro-style focus timer built with plain HTML, CSS, and JavaScript. No frameworks, no build step, no dependencies beyond a Google Fonts import.| [Click Here](https://madhurjyabaruah.github.io/mini-projects/focus-timer/) |  
+| Glade     | A small, single-page typing test.  |[Click Here](https://madhurjyabaruah.github.io/mini-projects/glade/) |
+
 
 ## Cooking Projects
 
