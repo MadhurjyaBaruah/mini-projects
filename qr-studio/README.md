@@ -2,7 +2,7 @@
 
 A clean, dependency-free QR code generator that runs entirely in your browser. No sign-up, no cloud, no tracking — paste your content, customize the look, and download.
 
-![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/qr-studio/&screenshot=true&meta=false&embed=screenshot.url)
+[![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/qr-studio/&screenshot=true&meta=false&embed=screenshot.url)](https://madhurjyabaruah.github.io/mini-projects/qr-studio/)
 
 ## ✨ Features
 
