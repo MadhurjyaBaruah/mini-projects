@@ -2,6 +2,7 @@
 
 A small, local habit tracker. Add the habits you are trying to keep, mark a day once you have done it, and watch the shading build as a streak grows.
 
+[![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/habit-tracker/&screenshot=true&meta=false&embed=screenshot.url)](https://madhurjyabaruah.github.io/mini-projects/habit-tracker/)
 ![Streaks screenshot](screenshot.png)
 
 ## Why this one
