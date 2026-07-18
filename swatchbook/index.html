@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swatchbook: a paint chip palette tool</title>
+<meta name="description" content="Shuffle color palettes, lift shades from a photo, and copy the results as CSS. A small no-build tool for finding colors that work together.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,380..600;1,9..144,440..560&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.25" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-shuffle" viewBox="0 0 24 24"><path d="M4 7h3.2c1.6 0 2.5.7 3.4 2M4 17h3.2c1.6 0 2.5-.7 3.4-2m5.9-6h3M16.5 6l3.5 2.5-3.5 2.5m0 4l3.5 2.5-3.5 2.5m-2.9-6.5c.8 1.2 1.7 2 3.3 2h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-image" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="10" r="1.4" fill="currentColor"/><path d="M5.5 17l4.8-5 3.3 3.6L16.3 12l2.9 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-code" viewBox="0 0 24 24"><path d="M9 8l-4.5 4L9 16M15 8l4.5 4-4.5 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="icon-lock-open" viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 11V8.6a3.5 3.5 0 0 1 6.7-1.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="icon-lock-closed" viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 11V8.5a3.5 3.5 0 0 1 7 0V11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+</svg>
+
+<div class="page">
+
+  <header class="site-head">
+    <span class="wordmark">Swatchbook</span>
+    <button class="btn btn-ghost" id="historyToggle" type="button" aria-expanded="false" aria-controls="historyShelf">
+      <svg class="icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+      Recent strips
+    </button>
+  </header>
+
+  <section class="hero">
+    <h1 class="hero-title">Find colors that <em class="accent">work</em> together.</h1>
+    <p class="hero-sub">Shuffle a set of shades, lift them from a photo, or lock the ones you like and copy the rest. Nothing leaves your browser.</p>
+  </section>
+
+  <section class="workspace">
+
+    <div class="strip-column">
+      <div class="strip-wrap" id="stripWrap">
+        <div class="strip" id="strip">
+          <div class="strip-header">
+            <div class="hole" aria-hidden="true"></div>
+            <p class="strip-name" id="stripName">Quiet Fern</p>
+          </div>
+          <div class="bands" id="bands"></div>
+
+          <div class="photo-pin" id="photoPin" hidden>
+            <span class="tape" aria-hidden="true"></span>
+            <img id="photoThumb" alt="">
+            <button class="pin-remove" id="photoRemove" type="button" aria-label="Remove photo and go back to generated colors">
+              <svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="drop-hint" id="dropHint" aria-hidden="true">Drop a photo to lift its colors</div>
+      </div>
+
+      <p class="strip-status" id="stripStatus">Shades, 5 chips, 0 locked.</p>
+    </div>
+
+    <div class="controls">
+
+      <div class="control-block">
+        <div class="control-row">
+          <button class="btn btn-primary" id="shuffleBtn" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#icon-shuffle"></use></svg>
+            Shuffle
+          </button>
+          <div class="stepper" role="group" aria-label="Number of chips in the strip">
+            <button type="button" id="countMinus" aria-label="Remove a chip">&minus;</button>
+            <span id="countValue">5</span>
+            <button type="button" id="countPlus" aria-label="Add a chip">+</button>
+          </div>
+        </div>
+        <p class="control-hint">Press space to shuffle from anywhere on the page.</p>
+      </div>
+
+      <div class="control-block">
+        <span class="control-label">Mode</span>
+        <div class="segmented" role="group" aria-label="Palette mode" id="modeGroup">
+          <button type="button" data-mode="shades" class="active">Shades</button>
+          <button type="button" data-mode="analogous">Analogous</button>
+          <button type="button" data-mode="complementary">Complementary</button>
+          <button type="button" data-mode="triadic">Triadic</button>
+          <button type="button" data-mode="random">Random</button>
+        </div>
+      </div>
+
+      <div class="control-block">
+        <span class="control-label">Format</span>
+        <div class="segmented segmented-mono" role="group" aria-label="Color code format" id="formatGroup">
+          <button type="button" data-format="hex" class="active">HEX</button>
+          <button type="button" data-format="rgb">RGB</button>
+          <button type="button" data-format="hsl">HSL</button>
+        </div>
+      </div>
+
+      <div class="control-block">
+        <span class="control-label">Export</span>
+        <div class="control-row">
+          <button class="btn btn-ghost" id="photoBtn" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#icon-image"></use></svg>
+            From a photo
+          </button>
+          <button class="btn btn-ghost" id="cssBtn" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#icon-code"></use></svg>
+            Copy CSS
+          </button>
+        </div>
+      </div>
+
+      <input type="file" id="photoInput" accept="image/*" hidden>
+    </div>
+
+  </section>
+
+  <section class="history" id="historyShelf" hidden>
+    <div class="history-head">
+      <h2>Recent strips</h2>
+      <button class="link-btn" id="historyClear" type="button">Clear</button>
+    </div>
+    <div class="shelf" id="shelf"></div>
+  </section>
+
+  <footer class="site-foot">
+    <p>Built by <em class="accent">hand</em>, no frameworks, no build step. Part of a <span class="mono-inline">mini-projects</span> shelf.</p>
+  </footer>
+
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js" defer></script>
+</body>
+</html>
