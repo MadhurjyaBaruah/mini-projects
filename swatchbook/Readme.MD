@@ -4,6 +4,8 @@ A color palette tool shaped like a real paint chip strip. Shuffle through genera
 
 No build step. No frameworks. No accounts or servers. Everything, including the photo color extraction, runs in the browser.
 
+[![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/swatchbook/&screenshot=true&meta=false&embed=screenshot.url)](https://madhurjyabaruah.github.io/mini-projects/swatchbook/)
+
 ## Why it looks like this
 
 This project started from a single reference image: a plain vertical strip of four color bands, cream fading down into deep green. Rather than just borrowing those four colors, the whole interface is built around that same object: a single paint chip strip, complete with a punched hole at the top, a dashed perforation between chips (like the tear lines on a real hardware store sample), and a printed catalog name stamped in a mono typeface. When you drop in a photo, its dominant colors get lifted onto the strip and the photo itself gets pinned to the corner under a strip of tape.
