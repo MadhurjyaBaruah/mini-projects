@@ -4,6 +4,12 @@ A small, single-page typing test. Pick a time limit or a word count, type the
 words as they appear, and get your speed and accuracy when you are done. Part
 of the `mini-projects` collection.
 
+## Live Demo
+
+**🔗 [Open Live Website](https://madhurjyabaruah.github.io/mini-projects/glade/)**
+
+_or click the preview below._
+
 [![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/glade/&screenshot=true&meta=false&embed=screenshot.url)](https://madhurjyabaruah.github.io/mini-projects/glade/)
 
 Live text moves through a highlighted "clearing" as you type, untyped words
