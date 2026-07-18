@@ -2,6 +2,12 @@
 
 A modern, production-quality weather application built with vanilla HTML, CSS, and JavaScript. Features a glassmorphism design with a slow animated gradient background, real-time weather data, animated weather icons, and a floating navigation dock.
 
+## Live Demo
+
+**🔗 [Open Live Website](https://madhurjyabaruah.github.io/mini-projects/skyro-weather/)**
+
+_or click the preview below._
+
 [![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/skyro-weather/&screenshot=true&meta=false&embed=screenshot.url)](https://madhurjyabaruah.github.io/mini-projects/skyro-weather/)
 
 ## Features
