@@ -4,6 +4,12 @@ A color palette tool shaped like a real paint chip strip. Shuffle through genera
 
 No build step. No frameworks. No accounts or servers. Everything, including the photo color extraction, runs in the browser.
 
+## Live Demo
+
+**🔗 [Open Live Website](https://madhurjyabaruah.github.io/mini-projects/swatchbook/)**
+
+_or click the preview below._
+
 [![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/swatchbook/&screenshot=true&meta=false&embed=screenshot.url)](https://madhurjyabaruah.github.io/mini-projects/swatchbook/)
 
 ## Why it looks like this
