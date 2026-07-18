@@ -2,6 +2,14 @@
 
 A minimal Pomodoro-style focus timer built with plain HTML, CSS, and JavaScript. No frameworks, no build step, no dependencies beyond a Google Fonts import.
 
+## Live Demo
+
+**🔗 [Open Live Website](https://madhurjyabaruah.github.io/mini-projects/fous-timer/)**
+
+_or click the preview below._
+
+[![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/focus-timer/&screenshot=true&meta=false&embed=screenshot.url)](https://madhurjyabaruah.github.io/mini-projects/flocus-timer/)
+
 ## What it does
 
 Follows the standard Pomodoro technique: 25 minutes of focused work followed by a short break, with a longer break after every four sessions.
