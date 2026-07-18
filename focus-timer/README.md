@@ -4,11 +4,11 @@ A minimal Pomodoro-style focus timer built with plain HTML, CSS, and JavaScript.
 
 ## Live Demo
 
-**🔗 [Open Live Website](https://madhurjyabaruah.github.io/mini-projects/fous-timer/)**
+**🔗 [Open Live Website](https://madhurjyabaruah.github.io/mini-projects/focus-timer/)**
 
 _or click the preview below._
 
-[![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/focus-timer/&screenshot=true&meta=false&embed=screenshot.url)](https://madhurjyabaruah.github.io/mini-projects/flocus-timer/)
+[![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/focus-timer/&screenshot=true&meta=false&embed=screenshot.url)](https://madhurjyabaruah.github.io/mini-projects/focus-timer/)
 
 ## What it does
 
