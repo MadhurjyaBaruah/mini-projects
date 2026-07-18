@@ -2,6 +2,8 @@
 
 A collection of small projects built while learning programming, web development, and software development concepts.
 
+![Alt](https://repobeats.axiom.co/api/embed/83fb4a3cc0751531d14af87f52e67432984a4cee.svg "Repobeats analytics image")
+
 ## Purpose
 
 This repository contains mini projects created to improve problem-solving, coding skills, and project development experience.
