@@ -25,6 +25,7 @@ mini-projects/
 | SpinHub | SpinHub is a browser-based decision-making app built around spinning wheels. | not ready |
 | Focus Timer | A minimal Pomodoro-style focus timer built with plain HTML, CSS, and JavaScript. No frameworks, no build step, no dependencies beyond a Google Fonts import.| [Click Here](https://madhurjyabaruah.github.io/mini-projects/focus-timer/) |  
 | Glade     | A small, single-page typing test.  |[Click Here](https://madhurjyabaruah.github.io/mini-projects/glade/) |
+| Swatchbook | A color palette tool shaped like a real paint chip strip. | [Click Here](https://madhurjyabaruah.github.io/mini-projects/swatchbook/) |
 
 
 ## Cooking Projects
