@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inkwell, a live writing companion</title>
+<meta name="description" content="Paste or type a draft and see word count, reading time, readability and word rhythm update as you go. Runs entirely in your browser, nothing is uploaded.">
+<meta name="theme-color" content="#FAF6EA">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+  <header class="site-header">
+    <div class="wordmark">
+      <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2C12 2 5 11 5 15.5C5 19.09 8.13 22 12 22C15.87 22 19 19.09 19 15.5C19 11 12 2 12 2Z"/>
+      </svg>
+      <span class="word">Inkwell</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1 class="hero-line">Paste your draft. Watch it get <em class="accent">measured</em>.</h1>
+      <p class="hero-sub">Word count, reading time and rhythm, tallied while you type. Nothing leaves your browser.</p>
+    </section>
+
+    <section class="workspace">
+      <div class="editor-pane">
+        <div class="editor-toolbar">
+          <label class="editor-label" for="draft">Your draft</label>
+          <div class="toolbar-actions">
+            <button type="button" id="btn-sample" class="btn">Load a sample</button>
+            <button type="button" id="btn-clear" class="btn">Clear</button>
+          </div>
+        </div>
+        <textarea id="draft" class="editor" placeholder="Start typing here." spellcheck="true"></textarea>
+        <p class="empty-hint" id="empty-hint">Start typing, or paste something you have already <em class="accent">written</em>.</p>
+      </div>
+
+      <aside class="stats-pane" aria-label="Draft statistics">
+        <h2 class="stats-heading">The shape of your <em class="accent">draft</em>.</h2>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <span class="stat-value" id="stat-words">0</span>
+            <span class="stat-label">words</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="stat-chars">0</span>
+            <span class="stat-label">characters</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="stat-sentences">0</span>
+            <span class="stat-label">sentences</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="stat-time">0 min</span>
+            <span class="stat-label">reading time</span>
+          </div>
+        </div>
+        <dl class="stat-list">
+          <div class="stat-row">
+            <dt>Speaking time</dt>
+            <dd id="stat-speak">0 min</dd>
+          </div>
+          <div class="stat-row">
+            <dt>Average word length</dt>
+            <dd id="stat-avgword">0 chars</dd>
+          </div>
+          <div class="stat-row">
+            <dt>Average sentence length</dt>
+            <dd id="stat-avgsentence">0 words</dd>
+          </div>
+          <div class="stat-row">
+            <dt>Longest word</dt>
+            <dd id="stat-longest">-</dd>
+          </div>
+          <div class="stat-row">
+            <dt>Vocabulary variety</dt>
+            <dd id="stat-unique">0%</dd>
+          </div>
+        </dl>
+      </aside>
+    </section>
+
+    <section class="detail-grid">
+      <div class="detail-panel">
+        <h2>Words you <em class="accent">lean</em> on.</h2>
+        <ul class="chip-list" id="frequent-list"></ul>
+        <p class="muted-note" id="frequent-empty">Keep writing to see your most used words.</p>
+      </div>
+
+      <div class="detail-panel">
+        <h2>How it <em class="accent">reads</em>.</h2>
+        <div class="gauge" id="gauge">
+          <div class="gauge-segment" data-level="0"></div>
+          <div class="gauge-segment" data-level="1"></div>
+          <div class="gauge-segment" data-level="2"></div>
+          <div class="gauge-segment" data-level="3"></div>
+          <div class="gauge-segment" data-level="4"></div>
+        </div>
+        <div class="gauge-readout">
+          <span class="gauge-score" id="gauge-score">-</span>
+          <span class="gauge-label" id="gauge-label">Write a few sentences to see a score.</span>
+        </div>
+        <p class="gauge-note">Based on average sentence length and word length. Higher scores mean easier reading.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Part of the mini-projects <em class="accent">collection</em>. Built with plain HTML, CSS and JavaScript, everything stays in your browser.</p>
+  </footer>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html>
