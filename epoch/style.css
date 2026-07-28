@@ -1,0 +1,407 @@
+/* -------------------------------------------------------
+   Epoch - life in weeks
+   palette: cream / pale yellow-green / teal / deep green
+------------------------------------------------------- */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --cream:      #FAF6EA;
+  --pale:       #E4F1AF;
+  --teal:       #5DB996;
+  --deep:       #108B4F;
+
+  /* derived text tones */
+  --ink:        #0d2117;
+  --ink-mid:    #3a6048;
+  --ink-muted:  #7a9e8b;
+
+  /* surface */
+  --card-bg:    #ffffff;
+  --border:     rgba(93, 185, 150, 0.2);
+  --border-deep: rgba(16, 139, 79, 0.12);
+
+  --sans:   'Inter', system-ui, -apple-system, sans-serif;
+  --serif:  'Playfair Display', Georgia, 'Times New Roman', serif;
+
+  --radius-sm: 4px;
+  --radius:    8px;
+  --radius-lg: 14px;
+}
+
+/* ---- base ---- */
+
+html {
+  font-size: 15px;
+}
+
+body {
+  font-family: var(--sans);
+  font-weight: 400;
+  background-color: var(--cream);
+  color: var(--ink);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* the key typographic move: serif italic accent, same color, same size */
+.accent {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  /* intentionally no color override - it reads as style, not highlight */
+}
+
+/* ---- layout ---- */
+
+.container {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 2.5rem;
+}
+
+/* ---- header ---- */
+
+.site-header {
+  margin-bottom: 2.5rem;
+}
+
+.header-eyebrow {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.5rem;
+}
+
+h1 {
+  font-size: clamp(2.4rem, 7vw, 3.2rem);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  color: var(--deep);
+  line-height: 1;
+  margin-bottom: 0.45rem;
+}
+
+.tagline {
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--ink-muted);
+  letter-spacing: 0.01em;
+}
+
+/* ---- setup card ---- */
+
+.setup-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-deep);
+  border-radius: var(--radius-lg);
+  padding: 1.6rem 1.6rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.3rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.field-hint {
+  font-size: 0.73rem;
+  color: var(--ink-muted);
+  opacity: 0.8;
+}
+
+input[type="date"] {
+  font-family: var(--sans);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--cream);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.75rem;
+  outline: none;
+  transition: border-color 0.18s ease;
+  max-width: 220px;
+  cursor: pointer;
+}
+
+input[type="date"]:hover {
+  border-color: var(--teal);
+}
+
+input[type="date"]:focus {
+  border-color: var(--deep);
+  background: #ffffff;
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 200px;
+  height: 3px;
+  background: var(--pale);
+  border-radius: 99px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--deep);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.25);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--deep);
+  border: none;
+  cursor: pointer;
+}
+
+.slider-val {
+  font-size: 0.88rem;
+  color: var(--ink-mid);
+  min-width: 58px;
+}
+
+/* ---- stats row ---- */
+
+.stats-row {
+  display: none;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.7rem;
+  margin-bottom: 1.5rem;
+}
+
+.stats-row.visible {
+  display: grid;
+  animation: slideUp 0.35s ease;
+}
+
+.stat-card {
+  background: var(--deep);
+  border-radius: var(--radius);
+  padding: 1.1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.stat-card--accent {
+  background: var(--ink);
+}
+
+.stat-num {
+  font-size: clamp(1.3rem, 4vw, 1.75rem);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--pale);
+  display: block;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.3;
+}
+
+/* accent inside dark card stays the same color as surrounding label text */
+.stat-label .accent {
+  color: inherit;
+}
+
+/* ---- grid section ---- */
+
+.grid-section {
+  display: none;
+}
+
+.grid-section.visible {
+  display: block;
+  animation: slideUp 0.35s ease 0.08s both;
+}
+
+.grid-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.legend {
+  display: flex;
+  gap: 1.1rem;
+  align-items: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.73rem;
+  color: var(--ink-muted);
+}
+
+.swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.swatch-lived  { background: var(--deep); }
+.swatch-now    { background: var(--teal); }
+.swatch-future {
+  background: var(--pale);
+  border: 1px solid rgba(93, 185, 150, 0.35);
+}
+
+.week-label {
+  font-size: 0.72rem;
+  color: var(--teal);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.canvas-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius);
+  /* subtle inset feel */
+  background: rgba(255,255,255,0.5);
+  border: 1px solid var(--border-deep);
+  padding: 1rem;
+}
+
+#grid {
+  display: block;
+  cursor: crosshair;
+  /* canvas scales to fit container width */
+  max-width: 100%;
+}
+
+.grid-note {
+  margin-top: 0.65rem;
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+}
+
+/* ---- tooltip ---- */
+
+#tooltip {
+  position: fixed;
+  display: none;
+  background: var(--ink);
+  color: var(--pale);
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 400;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  z-index: 999;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  /* small shadow for legibility */
+  box-shadow: 0 2px 8px rgba(13,33,23,0.25);
+}
+
+/* ---- footer ---- */
+
+.site-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--border-deep);
+}
+
+.site-footer p {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+}
+
+/* ---- animations ---- */
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---- responsive ---- */
+
+@media (max-width: 500px) {
+  .container {
+    padding: 2.5rem 1rem 2rem;
+  }
+
+  .stats-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stat-card:last-child {
+    grid-column: span 2;
+  }
+
+  input[type="range"] {
+    width: 140px;
+  }
+
+  .setup-card {
+    padding: 1.2rem;
+  }
+
+  .canvas-wrap {
+    padding: 0.6rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stats-row.visible,
+  .grid-section.visible {
+    animation: none;
+  }
+}
