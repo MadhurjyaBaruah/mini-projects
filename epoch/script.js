@@ -7,14 +7,18 @@
   'use strict';
 
   // --- DOM refs ---
-  const birthdateEl     = document.getElementById('birthdate');
-  const lifespanEl      = document.getElementById('lifespan');
-  const lifespanDisplay = document.getElementById('lifespan-display');
-  const statsRow        = document.getElementById('stats-row');
-  const gridSection     = document.getElementById('grid-section');
-  const canvas          = document.getElementById('grid');
-  const tooltip         = document.getElementById('tooltip');
+  const birthdateEl      = document.getElementById('birthdate');
+  const lifespanEl       = document.getElementById('lifespan');
+  const lifespanDisplay  = document.getElementById('lifespan-display');
+  const statsRow         = document.getElementById('stats-row');
+  const gridSection      = document.getElementById('grid-section');
+  const canvas           = document.getElementById('grid');
+  const tooltip          = document.getElementById('tooltip');
   const currentWeekLabel = document.getElementById('current-week-label');
+
+  // age calculator
+  const ageSection = document.getElementById('age-section');
+  const ageBdayEl  = document.getElementById('age-bday');
 
   const ctx = canvas.getContext('2d');
 
@@ -31,6 +35,10 @@
   };
 
   const WEEKS_PER_YEAR = 52;
+
+  // live ticker state
+  let tickerInterval = null;
+  let storedBirth    = null;
 
   // grid drawing state (stored so hover can reference it)
   let state = {
@@ -106,9 +114,20 @@
     const currentWeekNum = weeksLived + 1;
     currentWeekLabel.textContent = 'week ' + currentWeekNum.toLocaleString() + ' of your life';
 
-    // show sections
+    // age section - show and populate
+    storedBirth = birth;
+    showAge(birth);
+    ageSection.classList.add('visible');
+
+    // show weeks stats + grid
     statsRow.classList.add('visible');
     gridSection.classList.add('visible');
+
+    // start (or restart) the live seconds ticker
+    if (tickerInterval) clearInterval(tickerInterval);
+    tickerInterval = setInterval(function () {
+      if (storedBirth) updateLiveTicker(storedBirth);
+    }, 1000);
 
     // draw
     drawGrid(birth, totalWeeks, weeksLived);
@@ -327,6 +346,99 @@
     }
 
     requestAnimationFrame(tick);
+  }
+
+  // --- age calculator ---
+
+  function showAge(birth) {
+    const now = new Date();
+    const age = calcAge(birth, now);
+
+    document.getElementById('a-years').textContent  = age.years;
+    document.getElementById('a-months').textContent = age.months;
+    document.getElementById('a-days').textContent   = age.days;
+
+    updateLiveTicker(birth);
+    updateBirthdayNote(birth, now);
+  }
+
+  // returns { years, months, days } as of now
+  function calcAge(birth, now) {
+    let years  = now.getFullYear() - birth.getFullYear();
+    let months = now.getMonth()    - birth.getMonth();
+    let days   = now.getDate()     - birth.getDate();
+
+    if (days < 0) {
+      months--;
+      // borrow days from the previous month
+      const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+      days += prevMonthEnd.getDate();
+    }
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    return { years, months, days };
+  }
+
+  // called once on load and then every second by the interval
+  function updateLiveTicker(birth) {
+    const now        = new Date();
+    const ms         = now - birth;
+
+    const totalDays  = Math.floor(ms / (1000 * 60 * 60 * 24));
+    const totalHours = Math.floor(ms / (1000 * 60 * 60));
+    const totalMins  = Math.floor(ms / (1000 * 60));
+    const totalSecs  = Math.floor(ms / 1000);
+
+    document.getElementById('t-days').textContent  = totalDays.toLocaleString();
+    document.getElementById('t-hours').textContent = fmtBig(totalHours);
+    document.getElementById('t-mins').textContent  = fmtBig(totalMins);
+
+    // seconds: update the number and flash it
+    const secsEl = document.getElementById('t-secs');
+    secsEl.textContent = fmtBig(totalSecs);
+
+    // remove and re-add class to re-trigger the CSS animation
+    secsEl.classList.remove('flash');
+    void secsEl.offsetWidth; // force reflow so the browser notices the removal
+    secsEl.classList.add('flash');
+  }
+
+  // abbreviate large numbers: 13,623,840 -> "13.6M"
+  function fmtBig(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    return n.toLocaleString();
+  }
+
+  function updateBirthdayNote(birth, now) {
+    // check if today is their birthday
+    const isToday = (
+      birth.getMonth() === now.getMonth() &&
+      birth.getDate()  === now.getDate()
+    );
+
+    if (isToday) {
+      ageBdayEl.textContent = 'happy birthday today';
+      ageBdayEl.className   = 'age-bday bday--today';
+      return;
+    }
+
+    // find next birthday
+    let next = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
+    if (next <= now) next.setFullYear(now.getFullYear() + 1);
+
+    const daysUntil = Math.ceil((next - now) / (1000 * 60 * 60 * 24));
+    const label     = daysUntil === 1 ? 'day' : 'days';
+
+    if (daysUntil <= 30) {
+      ageBdayEl.textContent = 'next birthday in ' + daysUntil + ' ' + label;
+      ageBdayEl.className   = 'age-bday bday--soon';
+    } else {
+      ageBdayEl.textContent = 'next birthday in ' + daysUntil + ' days';
+      ageBdayEl.className   = 'age-bday';
+    }
   }
 
 })();
