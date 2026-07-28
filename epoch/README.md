@@ -3,7 +3,15 @@
 A life calendar that maps your entire lifespan as a grid of weeks.
 
 ---
+## Live Demo
 
+**🔗 [Open Live Website](https://madhurjyabaruah.github.io/mini-projects/epoch/)**
+
+_or click the preview below._
+
+[![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/epoch/&screenshot=true&meta=false&embed=screenshot.url)](https://madhurjyabaruah.github.io/mini-projects/epoch/)
+
+---
 ## What it does
 
 Enter your date of birth. Epoch draws your life as a grid of small squares, 52 columns wide (one per week) and as many rows tall as your target lifespan. Filled squares are weeks already behind you. The teal square is the week you are in right now. The pale squares ahead are still yours.
