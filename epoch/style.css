@@ -210,7 +210,7 @@ input[type="range"]::-moz-range-thumb {
 
 .stats-row.visible {
   display: grid;
-  animation: slideUp 0.35s ease;
+  animation: slideUp 0.35s ease 0.08s both;
 }
 
 .stat-card {
@@ -254,7 +254,7 @@ input[type="range"]::-moz-range-thumb {
 
 .grid-section.visible {
   display: block;
-  animation: slideUp 0.35s ease 0.08s both;
+  animation: slideUp 0.35s ease 0.16s both;
 }
 
 .grid-header {
@@ -400,8 +400,191 @@ input[type="range"]::-moz-range-thumb {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .age-section.visible,
   .stats-row.visible,
   .grid-section.visible {
     animation: none;
+  }
+}
+
+/* ---- age calculator section ---- */
+
+.age-section {
+  display: none;
+  margin-bottom: 1.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-deep);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.age-section.visible {
+  display: block;
+  animation: slideUp 0.35s ease both;
+}
+
+.age-top {
+  padding: 1.5rem 1.6rem 1.3rem;
+}
+
+.age-eyebrow {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 0.55rem;
+}
+
+.age-primary {
+  font-size: clamp(1.7rem, 5.5vw, 2.5rem);
+  font-weight: 300;
+  color: var(--deep);
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+}
+
+/* age-num stays in Inter via body inheritance */
+
+.age-unit {
+  /* Playfair Display italic via .accent */
+  /* slight optical size correction - Playfair reads large */
+  font-size: 0.88em;
+}
+
+.age-comma,
+.age-amp {
+  color: var(--ink-muted);
+  font-weight: 300;
+}
+
+/* ---- live ticker strip ---- */
+
+.age-ticker-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--deep);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ticker-item {
+  padding: 0.85rem 0.75rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.ticker-item:last-child {
+  border-right: none;
+}
+
+.ticker-item--live {
+  /* subtle teal tint on the live seconds cell */
+  background: rgba(93, 185, 150, 0.09);
+}
+
+.ticker-num {
+  font-size: clamp(0.95rem, 2.8vw, 1.3rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: var(--pale);
+  font-variant-numeric: tabular-nums;
+  display: block;
+  line-height: 1;
+}
+
+.ticker-label {
+  font-size: 0.63rem;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: uppercase;
+}
+
+/* pulsing live dot */
+.live-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--teal);
+  flex-shrink: 0;
+  animation: livePulse 1.4s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1;    transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.6); }
+}
+
+/* flash on each tick */
+@keyframes tickFlash {
+  0%   { color: var(--pale); }
+  40%  { color: var(--teal); }
+  100% { color: var(--pale); }
+}
+
+.ticker-live.flash {
+  animation: tickFlash 0.28s ease;
+}
+
+/* ---- birthday note ---- */
+
+.age-bday {
+  padding: 0.6rem 1.6rem;
+  font-size: 0.73rem;
+  color: var(--ink-muted);
+  border-top: 1px solid var(--border-deep);
+  background: rgba(250, 246, 234, 0.6);
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+}
+
+.age-bday.bday--soon {
+  color: var(--deep);
+  font-weight: 500;
+  background: rgba(93, 185, 150, 0.07);
+  border-top-color: rgba(93, 185, 150, 0.28);
+}
+
+.age-bday.bday--today {
+  color: var(--teal);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  background: rgba(93, 185, 150, 0.1);
+  border-top-color: var(--teal);
+}
+
+/* ---- mobile overrides for ticker ---- */
+
+@media (max-width: 500px) {
+  .age-ticker-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ticker-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  /* remove right border on even items (right column) */
+  .ticker-item:nth-child(2n) {
+    border-right: none;
+  }
+
+  /* remove bottom border on last row */
+  .ticker-item:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
+
+  .age-top {
+    padding: 1.2rem;
+  }
+
+  .age-bday {
+    padding: 0.55rem 1.2rem;
   }
 }
