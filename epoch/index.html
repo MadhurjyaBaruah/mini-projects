@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Epoch - Your Life in Weeks</title>
+  <meta name="description" content="A quiet tool that maps your entire life as a grid of weeks." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital@1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="tooltip" role="tooltip" aria-hidden="true"></div>
+
+  <main class="container">
+
+    <header class="site-header">
+      <div class="header-eyebrow">life calendar</div>
+      <h1>Epoch</h1>
+      <p class="tagline">your life, in <em class="accent">weeks</em></p>
+    </header>
+
+    <section class="setup-card" aria-label="Configuration">
+      <div class="field">
+        <label for="birthdate">date of birth</label>
+        <input
+          type="date"
+          id="birthdate"
+          name="birthdate"
+          aria-label="Enter your date of birth"
+        />
+        <span class="field-hint">the grid draws the moment you fill this in</span>
+      </div>
+
+      <div class="field">
+        <label for="lifespan">target lifespan</label>
+        <div class="slider-row">
+          <input
+            type="range"
+            id="lifespan"
+            name="lifespan"
+            min="60"
+            max="100"
+            value="80"
+            aria-label="Target lifespan in years"
+          />
+          <span id="lifespan-display" class="slider-val" aria-live="polite">80 years</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-row" id="stats-row" aria-label="Life statistics">
+      <div class="stat-card">
+        <span class="stat-num" id="w-lived">0</span>
+        <span class="stat-label">weeks <em class="accent">lived</em></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num" id="w-left">0</span>
+        <span class="stat-label">weeks <em class="accent">ahead</em></span>
+      </div>
+      <div class="stat-card stat-card--accent">
+        <span class="stat-num" id="w-pct">0%</span>
+        <span class="stat-label">of life <em class="accent">elapsed</em></span>
+      </div>
+    </section>
+
+    <section class="grid-section" id="grid-section" aria-label="Life grid visualization">
+
+      <div class="grid-header">
+        <div class="legend">
+          <span class="legend-item">
+            <span class="swatch swatch-lived"></span>
+            lived
+          </span>
+          <span class="legend-item">
+            <span class="swatch swatch-now"></span>
+            now
+          </span>
+          <span class="legend-item">
+            <span class="swatch swatch-future"></span>
+            ahead
+          </span>
+        </div>
+        <span class="week-label" id="current-week-label"></span>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas
+          id="grid"
+          aria-label="Grid showing weeks of your life as small squares"
+        ></canvas>
+      </div>
+
+      <p class="grid-note">each square is one <em class="accent">week</em> &nbsp;|&nbsp; hover to see the date</p>
+
+    </section>
+
+    <footer class="site-footer">
+      <p>Epoch &nbsp;/&nbsp; no data leaves your browser &nbsp;/&nbsp; open source</p>
+    </footer>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
