@@ -520,15 +520,9 @@ input[type="range"]::-moz-range-thumb {
   50%       { opacity: 0.3; transform: scale(0.6); }
 }
 
-/* flash on each tick */
-@keyframes tickFlash {
-  0%   { color: var(--pale); }
-  40%  { color: var(--teal); }
-  100% { color: var(--pale); }
-}
-
-.ticker-live.flash {
-  animation: tickFlash 0.28s ease;
+/* color transition so the inline style pulse fades smoothly each second */
+.ticker-live {
+  transition: color 0.22s ease-out;
 }
 
 /* ---- birthday note ---- */
