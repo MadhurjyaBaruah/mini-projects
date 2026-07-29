@@ -114,14 +114,18 @@
     const currentWeekNum = weeksLived + 1;
     currentWeekLabel.textContent = 'week ' + currentWeekNum.toLocaleString() + ' of your life';
 
-    // age section - show and populate
+    // show sections - use both inline style and class so it works
+    // even when CSS is stale/cached without the .visible rule
+    ageSection.style.display = 'block';
+    ageSection.classList.add('visible');
+    statsRow.style.display   = 'grid';
+    statsRow.classList.add('visible');
+    gridSection.style.display = 'block';
+    gridSection.classList.add('visible');
+
+    // populate age values (section is now visible, so offsetWidth is real)
     storedBirth = birth;
     showAge(birth);
-    ageSection.classList.add('visible');
-
-    // show weeks stats + grid
-    statsRow.classList.add('visible');
-    gridSection.classList.add('visible');
 
     // start (or restart) the live seconds ticker
     if (tickerInterval) clearInterval(tickerInterval);
@@ -351,12 +355,18 @@
   // --- age calculator ---
 
   function showAge(birth) {
-    const now = new Date();
-    const age = calcAge(birth, now);
+    var now = new Date();
+    var age = calcAge(birth, now);
 
-    document.getElementById('a-years').textContent  = age.years;
-    document.getElementById('a-months').textContent = age.months;
-    document.getElementById('a-days').textContent   = age.days;
+    var yearsEl  = document.getElementById('a-years');
+    var monthsEl = document.getElementById('a-months');
+    var daysEl   = document.getElementById('a-days');
+
+    if (!yearsEl || !monthsEl || !daysEl) return; // guard
+
+    yearsEl.textContent  = age.years;
+    monthsEl.textContent = age.months;
+    daysEl.textContent   = age.days;
 
     updateLiveTicker(birth);
     updateBirthdayNote(birth, now);
@@ -384,26 +394,32 @@
 
   // called once on load and then every second by the interval
   function updateLiveTicker(birth) {
-    const now        = new Date();
-    const ms         = now - birth;
+    var now       = new Date();
+    var ms        = now - birth;
 
-    const totalDays  = Math.floor(ms / (1000 * 60 * 60 * 24));
-    const totalHours = Math.floor(ms / (1000 * 60 * 60));
-    const totalMins  = Math.floor(ms / (1000 * 60));
-    const totalSecs  = Math.floor(ms / 1000);
+    var totalDays  = Math.floor(ms / 86400000);
+    var totalHours = Math.floor(ms / 3600000);
+    var totalMins  = Math.floor(ms / 60000);
+    var totalSecs  = Math.floor(ms / 1000);
 
-    document.getElementById('t-days').textContent  = totalDays.toLocaleString();
-    document.getElementById('t-hours').textContent = fmtBig(totalHours);
-    document.getElementById('t-mins').textContent  = fmtBig(totalMins);
+    var daysEl  = document.getElementById('t-days');
+    var hoursEl = document.getElementById('t-hours');
+    var minsEl  = document.getElementById('t-mins');
+    var secsEl  = document.getElementById('t-secs');
 
-    // seconds: update the number and flash it
-    const secsEl = document.getElementById('t-secs');
-    secsEl.textContent = fmtBig(totalSecs);
+    if (!daysEl || !secsEl) return; // guard: elements not in DOM yet
 
-    // remove and re-add class to re-trigger the CSS animation
-    secsEl.classList.remove('flash');
-    void secsEl.offsetWidth; // force reflow so the browser notices the removal
-    secsEl.classList.add('flash');
+    daysEl.textContent  = totalDays.toLocaleString();
+    hoursEl.textContent = fmtBig(totalHours);
+    minsEl.textContent  = fmtBig(totalMins);
+    secsEl.textContent  = fmtBig(totalSecs);
+
+    // subtle color flash on the seconds cell each tick
+    // uses inline style so it works regardless of display state
+    secsEl.style.color = '#5DB996'; // teal
+    setTimeout(function () {
+      secsEl.style.color = '';
+    }, 220);
   }
 
   // abbreviate large numbers: 13,623,840 -> "13.6M"
