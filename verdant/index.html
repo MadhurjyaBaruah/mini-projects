@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verdant - Plant Care Journal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner">
+        <div class="logo-group">
+            <span class="logo">Verdant</span>
+            <p class="tagline">A quiet place for your <em class="accent">plants</em></p>
+        </div>
+        <button class="btn-primary" id="openAddBtn">Add a plant</button>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <div class="stats-bar" id="statsBar">
+        <div class="stat">
+            <span class="stat-num" id="statTotal">0</span>
+            <span class="stat-label">plants</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+            <span class="stat-num" id="statNeedWater">0</span>
+            <span class="stat-label">need water</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+            <span class="stat-num" id="statWatered">0</span>
+            <span class="stat-label">watered today</span>
+        </div>
+    </div>
+
+    <div class="empty-state" id="emptyState">
+        <div class="empty-pot">
+            <svg viewBox="0 0 120 160" width="96" xmlns="http://www.w3.org/2000/svg">
+                <path d="M30 116 Q30 146 40 149 L80 149 Q90 146 90 116 Z" fill="#E4F1AF"/>
+                <ellipse cx="60" cy="116" rx="30" ry="5" fill="#cce09a"/>
+                <ellipse cx="60" cy="114" rx="27" ry="4" fill="#c8b89a"/>
+                <path d="M56 112 Q54 82 56 52" stroke="#cce09a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                <path d="M64 112 Q66 82 64 52" stroke="#cce09a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                <ellipse cx="60" cy="48" rx="8" ry="5" fill="#cce09a"/>
+            </svg>
+        </div>
+        <h2>Your <em class="accent">garden</em> is empty</h2>
+        <p>Add a plant to start tracking its care.</p>
+        <div class="empty-actions">
+            <button class="btn-primary" id="emptyAddBtn">Add a plant</button>
+            <button class="btn-ghost btn-sm" id="sampleBtn">Try with sample data</button>
+        </div>
+    </div>
+
+    <div class="plant-grid" id="plantGrid"></div>
+
+</main>
+
+
+<!-- Add Plant Modal -->
+<div class="modal-backdrop" id="addModalBackdrop">
+    <div class="modal">
+        <button class="modal-close" id="closeAddModal" aria-label="Close">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M1 1L12 12M12 1L1 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+
+        <h2 class="modal-title">Add a <em class="accent">plant</em></h2>
+
+        <div class="form-group">
+            <label for="inputName">Name</label>
+            <input type="text" id="inputName" placeholder="What do you call it?" maxlength="30" autocomplete="off"/>
+        </div>
+
+        <div class="form-group">
+            <label for="inputSpecies">
+                Species
+                <span class="label-hint">optional</span>
+            </label>
+            <input type="text" id="inputSpecies" placeholder="e.g. Monstera deliciosa" maxlength="50" autocomplete="off"/>
+        </div>
+
+        <div class="form-group">
+            <label>Type</label>
+            <div class="type-grid" id="typeGrid"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputLastWatered">Last watered</label>
+            <input type="date" id="inputLastWatered"/>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn-ghost" id="cancelAddBtn">Cancel</button>
+            <button class="btn-primary" id="submitAddBtn">Add plant</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Detail Modal -->
+<div class="modal-backdrop" id="detailModalBackdrop">
+    <div class="modal modal-wide">
+        <button class="modal-close" id="closeDetailModal" aria-label="Close">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M1 1L12 12M12 1L1 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+        <div id="detailContent"></div>
+    </div>
+</div>
+
+
+<script src="app.js"></script>
+</body>
+</html>
