@@ -6,6 +6,14 @@ Built as part of the [mini-projects](../) collection.
 
 ---
 
+## Live Demo
+
+**🔗 [Open Live Website](https://madhurjyabaruah.github.io/mini-projects/folio/)**
+
+_or click the preview below._
+
+[![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/folio/&screenshot=true&meta=false&embed=screenshot.url)](https://madhurjyabaruah.github.io/mini-projects/folio/)
+
 ## What it does
 
 Folio is a clean, browser-based reading tracker. Log every book you are currently reading, have finished, or want to pick up next. Record your progress, leave a short note, give it a star rating, and watch your shelf grow over time.
