@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Signal: a minimalist Morse code translator with visual output and audio playback.">
+    <title>Signal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@1,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="wrap">
+
+        <header class="header">
+            <div class="brand">
+                <h1 class="logo">Signal</h1>
+                <p class="tagline">Translate your words into <em>morse</em></p>
+            </div>
+            <div class="mode-toggle">
+                <button class="tab active" id="btn-encode">Encode</button>
+                <button class="tab" id="btn-decode">Decode</button>
+            </div>
+        </header>
+
+        <main>
+
+            <section class="input-block">
+                <label class="field-label" id="input-label">Your message</label>
+                <textarea
+                    id="text-input"
+                    class="textarea"
+                    placeholder="Type something..."
+                    spellcheck="false"
+                    autocorrect="off"
+                    autocapitalize="off"
+                ></textarea>
+                <div class="input-foot">
+                    <span class="char-count" id="char-count">0 characters</span>
+                    <button class="text-btn" id="clear-btn">Clear</button>
+                </div>
+            </section>
+
+            <div class="rule">
+                <span class="rule-word">output</span>
+            </div>
+
+            <section class="output-block">
+                <div class="output-top">
+                    <span class="output-heading">Morse <em>signal</em></span>
+                    <div class="btns">
+                        <button class="btn" id="play-btn" disabled>
+                            <svg class="play-icon" width="10" height="12" viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
+                                <path d="M1 1 L9 6 L1 11 Z"/>
+                            </svg>
+                            <span id="play-label">Play</span>
+                        </button>
+                        <button class="btn ghost" id="copy-btn" disabled>Copy</button>
+                    </div>
+                </div>
+
+                <div class="morse-view" id="morse-view">
+                    <p class="hint">Start typing to see the <em>signal</em></p>
+                </div>
+
+                <div class="morse-string" id="morse-string"></div>
+
+                <div class="speed-row">
+                    <span class="speed-label">Speed</span>
+                    <input type="range" id="speed-range" class="speed-range" min="1" max="5" value="3" step="1">
+                    <span class="speed-tag" id="speed-tag">Normal</span>
+                </div>
+            </section>
+
+            <section class="ref-section">
+                <details class="ref-details">
+                    <summary>Morse code <em>chart</em></summary>
+                    <p class="ref-note" id="ref-note">Click a card to insert the character</p>
+                    <div class="ref-grid" id="ref-grid"></div>
+                </details>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <p>Signal, a <em>mini</em> project</p>
+        </footer>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
