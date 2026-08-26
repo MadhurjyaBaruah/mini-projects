@@ -13,6 +13,14 @@ A minimalist lunar phase tracker that lives entirely in your browser. No API, no
 
 Click the moon to reveal a random fact about Earth's nearest neighbour.
 
+## Live Demo
+
+**🔗 [Open Live Website](https://madhurjyabaruah.github.io/mini-projects/lune/)**
+
+_or click the preview below._
+
+[![Website Preview](https://api.microlink.io/?url=https://madhurjyabaruah.github.io/mini-projects/lune/&screenshot=true&meta=false&embed=screenshot.url)](https://madhurjyabaruah.github.io/mini-projects/lune/)
+
 ## How the phase calculation works
 
 The phase is derived from a known reference new moon: January 6, 2000 at 18:14 UTC. The elapsed time from that moment, modulo the mean synodic period of 29.530588853 days, gives the current age of the moon in its cycle. Illumination is the cosine relationship between phase angle and the fraction of the disc visible from Earth.
