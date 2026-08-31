@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cipher - encode and decode text using classical ciphers in your browser. Caesar, ROT13, and Vigenere with a live alphabet mapper.">
+  <title>Cipher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Neon background layers -->
+  <div class="bg-layer" aria-hidden="true">
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+    <div class="scan-sweep"></div>
+    <div class="dot-grid"></div>
+  </div>
+
+  <div class="page">
+
+    <header class="site-header">
+      <div class="brand">
+        <div class="brand-mark">C</div>
+        <div class="brand-copy">
+          <h1 class="brand-name">Cipher</h1>
+          <p class="brand-sub">classical <em class="serif-em">encryption</em> for the browser</p>
+        </div>
+      </div>
+      <span class="header-badge">browser-native</span>
+    </header>
+
+    <main>
+
+      <!-- Cipher type selector -->
+      <div class="cipher-tabs" role="tablist" aria-label="Choose a cipher">
+        <button class="c-tab active" data-cipher="caesar" role="tab" aria-selected="true">
+          <span class="c-tab-name">Caesar</span>
+          <span class="c-tab-hint">shift cipher</span>
+        </button>
+        <button class="c-tab" data-cipher="rot13" role="tab" aria-selected="false">
+          <span class="c-tab-name">ROT13</span>
+          <span class="c-tab-hint">rotate 13</span>
+        </button>
+        <button class="c-tab" data-cipher="vigenere" role="tab" aria-selected="false">
+          <span class="c-tab-name">Vigenere</span>
+          <span class="c-tab-hint">polyalphabetic</span>
+        </button>
+      </div>
+
+      <!-- Cipher description -->
+      <div class="info-strip">
+        <p id="cipher-desc">Each letter shifts forward by a fixed amount. A becomes D, B becomes E, and so on. Attributed to Julius Caesar, who used a shift of 3.</p>
+      </div>
+
+      <!-- Settings row -->
+      <div class="controls-bar">
+
+        <div class="key-area">
+          <!-- Caesar shift stepper -->
+          <div class="key-slot" id="slot-caesar">
+            <span class="key-label">shift</span>
+            <div class="stepper">
+              <button class="step-btn" id="btn-down" aria-label="decrease shift">-</button>
+              <input type="number" id="shift-input" value="3" min="1" max="25" aria-label="shift amount">
+              <button class="step-btn" id="btn-up" aria-label="increase shift">+</button>
+            </div>
+          </div>
+
+          <!-- Vigenere keyword -->
+          <div class="key-slot hidden" id="slot-vigenere">
+            <span class="key-label">keyword</span>
+            <input type="text" id="vig-key" placeholder="e.g. secret" maxlength="20" spellcheck="false" autocomplete="off" aria-label="Vigenere keyword">
+          </div>
+
+          <!-- ROT13 has no key -->
+          <div class="key-slot hidden" id="slot-rot13">
+            <span class="rot13-note">no key needed <span class="mid-sep">|</span> <em class="serif-em">self-inverse</em></span>
+          </div>
+        </div>
+
+        <!-- Encode / Decode -->
+        <div class="mode-switch" role="group" aria-label="Encode or decode">
+          <button class="mode-btn active" data-mode="encode" aria-pressed="true">encode</button>
+          <button class="mode-btn" data-mode="decode" aria-pressed="false">decode</button>
+        </div>
+
+      </div>
+
+      <!-- Live alphabet mapper - the signature element -->
+      <div class="alpha-strip" id="alpha-strip">
+        <div class="alpha-row plain-r" id="row-plain"></div>
+        <div class="alpha-divider"></div>
+        <div class="alpha-row cipher-r" id="row-cipher"></div>
+      </div>
+
+      <!-- Text input and output -->
+      <div class="work-area">
+
+        <div class="text-panel input-panel">
+          <div class="panel-head">
+            <span class="panel-label">input</span>
+            <span class="char-count" id="count-in">0</span>
+          </div>
+          <textarea
+            id="text-in"
+            class="panel-ta"
+            placeholder="type or paste your message..."
+            spellcheck="false"
+            autocomplete="off"
+          ></textarea>
+          <div class="panel-foot">
+            <button class="lnk-btn" id="btn-clear">clear</button>
+            <button class="lnk-btn" id="btn-sample">load sample</button>
+          </div>
+        </div>
+
+        <!-- Directional arrow -->
+        <div class="arrow-col" aria-hidden="true">
+          <svg class="arr-svg" viewBox="0 0 48 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="1" y1="12" x2="37" y2="12" stroke="#5DB996" stroke-width="1.5" stroke-linecap="round"/>
+            <polyline points="29,4 38,12 29,20" stroke="#5DB996" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span class="a-lbl" id="arrow-lbl">encoding</span>
+        </div>
+
+        <div class="text-panel output-panel">
+          <div class="panel-head">
+            <span class="panel-label" id="out-label">cipher text</span>
+            <span class="char-count" id="count-out">0</span>
+          </div>
+          <textarea
+            id="text-out"
+            class="panel-ta out-ta"
+            readonly
+            placeholder="result appears here..."
+            spellcheck="false"
+          ></textarea>
+          <div class="panel-foot">
+            <button class="lnk-btn" id="btn-copy">copy result</button>
+            <span class="copy-ok hidden" id="copy-ok">copied.</span>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <footer class="site-footer">
+      <p>built for <em class="serif-em">learning</em>, not for real secrets</p>
+    </footer>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
