@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbit | a pocket gravity sandbox</title>
+  <meta name="description" content="Orbit is a small gravity sandbox that runs in the browser. Launch bodies, bend their paths and watch the system settle.">
+  <meta name="theme-color" content="#FAF6EA">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='6' fill='%23108B4F'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='5.5' fill='none' stroke='%235DB996' stroke-width='2' transform='rotate(-28 16 16)'/%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- the glowing rings behind everything -->
+  <div class="neon" aria-hidden="true">
+    <span class="glow glow-a"></span>
+    <span class="glow glow-b"></span>
+    <span class="ring ring-1"></span>
+    <span class="ring ring-2"></span>
+    <span class="ring ring-3"></span>
+  </div>
+
+  <div class="page">
+
+    <header class="top">
+      <p class="wordmark">Orbit</p>
+      <p class="byline">a small experiment in n-body gravity</p>
+    </header>
+
+    <section class="intro">
+      <h1>Launch a body. Let gravity <em class="ax">decide</em>.</h1>
+      <p class="lede">Every mass pulls on every other mass, so even three bodies can wander into paths nobody planned. Drag on the stage to throw one in.</p>
+    </section>
+
+    <noscript><p class="noscript">Orbit needs JavaScript to run the simulation.</p></noscript>
+
+    <main class="layout">
+
+      <section class="stage-card" aria-label="Simulation">
+        <div class="stage-wrap" id="stageWrap">
+          <canvas id="stage" aria-label="Gravity simulation. Drag on the canvas to launch a body."></canvas>
+
+          <div class="hud hud-left">
+            <span class="chip"><b id="statBodies">0</b> bodies</span>
+            <span class="chip"><b id="statMerges">0</b> merges</span>
+            <span class="chip chip-state" id="stateChip" hidden>paused</span>
+          </div>
+
+          <div class="hud hud-right">
+            <button type="button" class="chip chip-btn" id="btnZoomOut" aria-label="Zoom out">-</button>
+            <span class="chip" id="zoomLabel">1.0x</span>
+            <button type="button" class="chip chip-btn" id="btnZoomIn" aria-label="Zoom in">+</button>
+          </div>
+
+          <p class="aim-readout" id="aimReadout" hidden></p>
+        </div>
+        <p class="hint">Drag to <em class="ax">launch</em>. A plain click drops one at rest. Right drag pans, the wheel zooms.</p>
+      </section>
+
+      <aside class="panel">
+
+        <section class="card">
+          <h2>Start from a <em class="ax">system</em></h2>
+          <div class="preset-grid" id="presets"></div>
+        </section>
+
+        <section class="card">
+          <h2>The next <em class="ax">body</em></h2>
+          <div class="mass-row">
+            <div class="mass-preview" aria-hidden="true"><span id="massDot"></span></div>
+            <label class="field grow">
+              <span class="field-top"><span>Mass</span><output id="massOut" for="mass">40</output></span>
+              <input type="range" id="mass" min="1" max="100" step="1" value="10">
+            </label>
+          </div>
+          <div class="swatches" id="swatches" role="group" aria-label="Body color">
+            <button type="button" class="swatch swatch-mix" data-color="mix" aria-pressed="true" aria-label="Cycle through colors" title="Cycle through colors"></button>
+            <button type="button" class="swatch" data-color="#E4F1AF" style="--c:#E4F1AF" aria-pressed="false" aria-label="Pale yellow green" title="Pale yellow green"></button>
+            <button type="button" class="swatch" data-color="#5DB996" style="--c:#5DB996" aria-pressed="false" aria-label="Teal green" title="Teal green"></button>
+            <button type="button" class="swatch" data-color="#108B4F" style="--c:#108B4F" aria-pressed="false" aria-label="Deep green" title="Deep green"></button>
+            <button type="button" class="swatch" data-color="#FAF6EA" style="--c:#FAF6EA" aria-pressed="false" aria-label="Cream" title="Cream"></button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Bend the <em class="ax">rules</em></h2>
+          <label class="field">
+            <span class="field-top"><span>Gravity</span><output id="gravityOut" for="gravity">1.0x</output></span>
+            <input type="range" id="gravity" min="0.2" max="3" step="0.05" value="1">
+          </label>
+          <label class="field">
+            <span class="field-top"><span>Time</span><output id="speedOut" for="speed">1.0x</output></span>
+            <input type="range" id="speed" min="0.25" max="3" step="0.05" value="1">
+          </label>
+          <label class="field">
+            <span class="field-top"><span>Trail length</span><output id="trailOut" for="trailLen">160</output></span>
+            <input type="range" id="trailLen" min="20" max="400" step="10" value="160">
+          </label>
+        </section>
+
+        <section class="card">
+          <h2>What you <em class="ax">see</em></h2>
+          <div class="switches">
+            <label class="switch">
+              <input type="checkbox" id="optTrails">
+              <span class="track" aria-hidden="true"></span>
+              <span class="switch-text">Glowing trails</span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="optVectors">
+              <span class="track" aria-hidden="true"></span>
+              <span class="switch-text">Velocity arrows</span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="optGrid">
+              <span class="track" aria-hidden="true"></span>
+              <span class="switch-text">Background grid</span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="optMerge">
+              <span class="track" aria-hidden="true"></span>
+              <span class="switch-text">Merge on contact</span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="optFollow">
+              <span class="track" aria-hidden="true"></span>
+              <span class="switch-text">Follow the heaviest</span>
+            </label>
+          </div>
+        </section>
+
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="btnPause">Pause</button>
+          <button type="button" class="btn" id="btnUndo">Undo</button>
+          <button type="button" class="btn" id="btnRecenter">Recenter</button>
+          <button type="button" class="btn btn-quiet" id="btnClear">Clear</button>
+        </div>
+
+      </aside>
+    </main>
+
+    <footer class="foot">
+      <p><kbd>Space</kbd> pause <kbd>Z</kbd> undo <kbd>R</kbd> reload the scene <kbd>C</kbd> clear</p>
+      <p>Plain HTML, CSS and <em class="ax">JavaScript</em>. No libraries.</p>
+    </footer>
+
+  </div>
+
+  <script src="physics.js" defer></script>
+  <script src="presets.js" defer></script>
+  <script src="render.js" defer></script>
+  <script src="script.js" defer></script>
+</body>
+</html>
