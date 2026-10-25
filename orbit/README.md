@@ -4,6 +4,15 @@ A small gravity sandbox that runs in the browser. Drag on the stage to throw a b
 
 Plain HTML, CSS and JavaScript. No build step, no dependencies, so it works as-is on GitHub Pages.
 
+## Live Demo
+
+**🔗 [Open Live Website](https://madhurjyabaruah.github.io/mini-projects/orbit/)**
+
+_or click the preview below._
+
+[![Website Preview](https://image.thum.io/get/width/1200/crop/800/https://madhurjyabaruah.github.io/mini-projects/orbit/)]
+(https://madhurjyabaruah.github.io/mini-projects/orbit/)
+
 ## What you can do
 
 - **Launch bodies.** Press on the stage, drag, and release. The drag line is the launch direction and its length sets the speed. A dotted preview shows where the body will go before you let go.
